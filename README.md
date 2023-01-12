@@ -10,8 +10,8 @@ status](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/test.yaml/
 ![pypi](https://img.shields.io/pypi/v/jax-dataloader.png) ![GitHub
 License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.png)
 
-This file will become your README and also the index of your
-documentation.
+`Jax-Dataloader` loads data for jax. It integrates dataloader from
+`pytorch`, `tensorflow` (coming-up), `merlin` (coming-up).
 
 ## Install
 
