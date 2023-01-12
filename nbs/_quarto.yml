@@ -1,11 +1,17 @@
 project:
   type: website
+  output-dir: _docs
+  preview:
+    port: 3000
+    browser: false
 
 format:
   html:
-    theme: cosmo
+    theme: 
+      - cosmo
     css: styles.css
     toc: true
+    toc-depth: 4
 
 website:
   twitter-card: true

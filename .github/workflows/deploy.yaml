@@ -1,9 +1,11 @@
 name: Deploy to GitHub Pages
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [master, main]
   workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps: [uses: fastai/workflows/quarto-ghp@master]
+    steps:
+      - uses: fastai/workflows/quarto-ghp@master
+        with: {pre: 1}
