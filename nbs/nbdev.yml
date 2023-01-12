@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "jax_dataloader"
+  site-url: "https://birkhoffg.github.io/jax_dataloader"
+  description: "Dataloader for jax"
+  repo-branch: master
+  repo-url: "https://github.com/birkhoffg/jax_dataloader"
