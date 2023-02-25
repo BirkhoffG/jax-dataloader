@@ -3,23 +3,32 @@
 # %% ../nbs/core.ipynb 3
 from __future__ import annotations
 import numpy as np
-from typing import Callable, Union, List, Tuple, Dict, Any, Optional, TypeVar, Generic, Iterable, Sequence, Iterator
+from typing import List, Tuple, Dict, Any, Optional, Iterable, Sequence, Iterator
 import jax
 from jax import vmap, grad, jit, numpy as jnp
 from jax.random import PRNGKey
 from abc import ABC
 from dataclasses import dataclass
 import collections
+import warnings
 
 # %% auto 0
-__all__ = ['PRNGSequence', 'Dataset', 'BaseDataLoader', 'DataLoaderJax', 'DataLoaderPytorch', 'DataloaderBackends', 'DataLoader']
+__all__ = ['PRNGSequence', 'Dataset', 'ArrayDataset', 'TorchDataset', 'HFDataset', 'BaseDataLoader', 'DataLoaderJax',
+           'DataLoaderPytorch', 'DataloaderBackends', 'DataLoader']
 
 # %% ../nbs/core.ipynb 4
-try: import torch.utils.data as torch_data
-except ModuleNotFoundError: torch_data = None
+try: 
+    import torch.utils.data as torch_data
+    import torch
+except ModuleNotFoundError: 
+    torch_data = None
+    torch = None
 
 try: import haiku as hk 
 except ModuleNotFoundError: hk = None
+
+try: import datasets as hf_datasets
+except ModuleNotFoundError: hf_datasets = None
 
 # %% ../nbs/core.ipynb 5
 @dataclass
@@ -59,10 +68,36 @@ class PRNGSequence(Iterator[PRNGKey]):
         return self._subkeys.popleft()
 
 # %% ../nbs/core.ipynb 9
-class Dataset:
-    """A simple pytorch-like Numpy Dataset."""
+def _check_pytorch_installed():
+    if torch_data is None:
+        raise ModuleNotFoundError("`pytorch` library needs to be installed. "
+            "Try `pip install torch`. Please refer to pytorch documentation for details: "
+            "https://pytorch.org/get-started/.")
     
-    def __init__(self, *arrays: jnp.DeviceArray):
+def _check_hf_installed():
+    if hf_datasets is None:
+        raise ModuleNotFoundError("`datasets` library needs to be installed. "
+            "Try `pip install datasets`. Please refer to huggingface documentation for details: "
+            "https://huggingface.co/docs/datasets/installation.html.")
+
+# %% ../nbs/core.ipynb 11
+class Dataset:
+    """A pytorch-like Dataset class."""
+
+    def __len__(self):
+        raise NotImplementedError
+
+    def __getitem__(self, index):
+        raise NotImplementedError
+
+# %% ../nbs/core.ipynb 12
+class ArrayDataset(Dataset):
+    """Dataset wrapping numpy arrays."""
+
+    def __init__(
+        self, 
+        *arrays: jnp.DeviceArray # Numpy array with same first dimension
+    ):
         assert all(arrays[0].shape[0] == arr.shape[0] for arr in arrays), \
             "All arrays must have the same dimension."
         self.arrays = arrays
@@ -70,22 +105,77 @@ class Dataset:
     def __len__(self):
         return self.arrays[0].shape[0]
 
-    def __getitem__(self, idx):
-        return tuple(arr[idx] for arr in self.arrays)
+    def __getitem__(self, index):
+        return tuple(arr[index] for arr in self.arrays)
 
-# %% ../nbs/core.ipynb 13
-class BaseDataLoader(ABC):
+
+# %% ../nbs/core.ipynb 17
+def _has_tensor(batch) -> bool:
+    if isinstance(batch[0], torch.Tensor):
+        return True
+    elif isinstance(batch[0], (tuple, list)):
+        transposed = zip(*batch)
+        return any([_has_tensor(samples) for samples in transposed])
+    else:
+        return False
+
+# %% ../nbs/core.ipynb 18
+class TorchDataset(Dataset):
+    """A Dataset class that wraps a pytorch Dataset."""
+    
+    def __init__(
+        self, 
+        dataset: torch_data.Dataset # Pytorch Dataset
+    ):
+        _check_pytorch_installed()
+        if not isinstance(dataset, torch_data.Dataset):
+            raise TypeError(f"`dataset` must be a torch Dataset, but got {type(dataset)}")
+        # Give a warning if the dataset is not in numpy format
+        if _has_tensor(dataset[0]):
+            warnings.warn("The dataset contains `torch.Tensor`. "
+                "Please make sure the dataset is in numpy format.")
+        self._ds = dataset
+
+    def __len__(self):
+        return len(self._ds)
+
+    def __getitem__(self, index):
+        return self._ds[index]
+
+# %% ../nbs/core.ipynb 28
+class HFDataset(Dataset):
+    """A Dataset class that wraps a huggingface Dataset."""
+    
+    def __init__(
+        self, 
+        dataset: hf_datasets.Dataset # Huggingface Dataset
+    ):
+        _check_hf_installed()
+        if not isinstance(dataset, hf_datasets.Dataset):
+            raise TypeError(f"`dataset` must be a huggingface Dataset, "
+                            f"but got {type(dataset)}")
+        # Ensure the dataset is in jax format
+        self._ds = dataset.with_format("jax")
+
+    def __len__(self):
+        return len(self._ds)
+
+    def __getitem__(self, index):
+        return self._ds[index]
+
+# %% ../nbs/core.ipynb 35
+class BaseDataLoader:
     """Dataloader Interface"""
     def __init__(
         self, 
-        dataset,
+        dataset, 
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         drop_last: bool = False,
         **kwargs
     ):
-        pass 
-    
+        pass
+
     def __len__(self):
         raise NotImplementedError
     
@@ -95,7 +185,7 @@ class BaseDataLoader(ABC):
     def __iter__(self):
         raise NotImplementedError
 
-# %% ../nbs/core.ipynb 15
+# %% ../nbs/core.ipynb 37
 class DataLoaderJax(BaseDataLoader):
     """Dataloder in Vanilla Jax"""
 
@@ -152,7 +242,7 @@ class DataLoaderJax(BaseDataLoader):
     def __iter__(self):
         return self
 
-# %% ../nbs/core.ipynb 19
+# %% ../nbs/core.ipynb 41
 # copy from https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html#data-loading-with-pytorch
 def _numpy_collate(batch):
     if isinstance(batch[0], np.ndarray):
@@ -171,20 +261,19 @@ def _convert_dataset_pytorch(dataset: Dataset):
     
     return DatasetPytorch(dataset)
 
-# %% ../nbs/core.ipynb 20
+# %% ../nbs/core.ipynb 42
 class DataLoaderPytorch(BaseDataLoader):
     """Pytorch Dataloader"""
     def __init__(
         self, 
         dataset: Dataset,
-        batch_size: int = 1,  # batch size
-        shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
-        drop_last: bool = False, # drop last batch or not
+        batch_size: int = 1,  # Batch size
+        shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
+        drop_last: bool = False, # Drop last batch or not
         **kwargs
     ):
-        if torch_data is None:
-            raise ModuleNotFoundError("`pytorch` library needs to be installed. Try `pip install torch`."
-            "Please refer to pytorch documentation for details: https://pytorch.org/get-started/.")
+        super().__init__(dataset, batch_size, shuffle, drop_last)
+        _check_pytorch_installed()
         
         dataset = _convert_dataset_pytorch(dataset)
         self.dataloader = torch_data.DataLoader(
@@ -205,7 +294,22 @@ class DataLoaderPytorch(BaseDataLoader):
     def __iter__(self):
         return self.dataloader.__iter__()
 
-# %% ../nbs/core.ipynb 23
+# %% ../nbs/core.ipynb 45
+def _dispatch_dataset(
+    dataset: Dataset | torch_data.Dataset | hf_datasets, # Dataset or Pytorch Dataset or HuggingFace Dataset
+):
+    if isinstance(dataset, Dataset):
+        return dataset
+    elif torch_data and isinstance(dataset, torch_data.Dataset):
+        return TorchDataset(dataset)
+    elif hf_datasets and isinstance(dataset, hf_datasets.Dataset):
+        return HFDataset(dataset)
+    else:
+        raise ValueError(f"dataset must be one of `jax_loader.core.Dataset`, "
+                         "`torch.utils.data.Dataset`, `datasets.Dataset`, "
+                         f"but got {type(dataset)}")
+
+# %% ../nbs/core.ipynb 46
 @dataclass(frozen=True)
 class DataloaderBackends:
     jax: BaseDataLoader = DataLoaderJax
@@ -226,7 +330,7 @@ class DataloaderBackends:
             backend for backend, dl_cls in self.__all__.items() if dl_cls is not None
         ]
 
-# %% ../nbs/core.ipynb 24
+# %% ../nbs/core.ipynb 47
 def _dispatch_dataloader(
     backend: str # dataloader backend
 ) -> BaseDataLoader:
@@ -240,7 +344,7 @@ def _dispatch_dataloader(
     return dl_cls
 
 
-# %% ../nbs/core.ipynb 26
+# %% ../nbs/core.ipynb 49
 class DataLoader:
     """Main Dataloader class to load Numpy data batches"""
     def __init__(
@@ -252,6 +356,7 @@ class DataLoader:
         drop_last: bool = False, # drop last batches or not
         **kwargs
     ):
+        dataset = _dispatch_dataset(dataset)
         dataloader_cls = _dispatch_dataloader(backend)
         self.dataloader = dataloader_cls(
             dataset=dataset, 
