@@ -3,7 +3,7 @@ project:
 
 website:
   title: "Jax-Dataloader"
-  site-url: "https://birkhoffg.github.io/jax_dataloader"
+  site-url: "https://birkhoffg.github.io/jax-dataloader"
   description: "Dataloader for jax"
   repo-branch: master
-  repo-url: "https://github.com/birkhoffg/jax_dataloader"
+  repo-url: "https://github.com/birkhoffg/jax-dataloader"
