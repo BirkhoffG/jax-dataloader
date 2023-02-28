@@ -86,5 +86,6 @@ d = { 'settings': { 'branch': 'master',
                                                                                    'jax_dataloader/core.py'),
                                      'jax_dataloader.core._dispatch_dataset': ('core.html#_dispatch_dataset', 'jax_dataloader/core.py'),
                                      'jax_dataloader.core._has_tensor': ('core.html#_has_tensor', 'jax_dataloader/core.py'),
+                                     'jax_dataloader.core._is_hf_dataset': ('core.html#_is_hf_dataset', 'jax_dataloader/core.py'),
                                      'jax_dataloader.core._numpy_collate': ('core.html#_numpy_collate', 'jax_dataloader/core.py'),
                                      'jax_dataloader.core.get_config': ('core.html#get_config', 'jax_dataloader/core.py')}}}

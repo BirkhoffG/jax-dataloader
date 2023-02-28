@@ -151,9 +151,9 @@ class HFDataset(Dataset):
         dataset: hf_datasets.Dataset # Huggingface Dataset
     ):
         _check_hf_installed()
-        if not isinstance(dataset, hf_datasets.Dataset):
-            raise TypeError(f"`dataset` must be a huggingface Dataset, "
-                            f"but got {type(dataset)}")
+        # if not isinstance(dataset, hf_datasets.Dataset):
+        #     raise TypeError(f"`dataset` must be a huggingface Dataset, "
+        #                     f"but got {type(dataset)}")
         # Ensure the dataset is in jax format
         self._ds = dataset.with_format("jax")
 
@@ -295,14 +295,20 @@ class DataLoaderPytorch(BaseDataLoader):
         return self.dataloader.__iter__()
 
 # %% ../nbs/core.ipynb 45
+def _is_hf_dataset(dataset):
+    return hf_datasets and (
+        isinstance(dataset, hf_datasets.Dataset) 
+        or isinstance(dataset, hf_datasets.DatasetDict)
+    )
+
 def _dispatch_dataset(
-    dataset: Dataset | torch_data.Dataset | hf_datasets, # Dataset or Pytorch Dataset or HuggingFace Dataset
+    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
 ):
     if isinstance(dataset, Dataset):
         return dataset
     elif torch_data and isinstance(dataset, torch_data.Dataset):
         return TorchDataset(dataset)
-    elif hf_datasets and isinstance(dataset, hf_datasets.Dataset):
+    elif _is_hf_dataset(dataset):
         return HFDataset(dataset)
     else:
         raise ValueError(f"dataset must be one of `jax_loader.core.Dataset`, "
