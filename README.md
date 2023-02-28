@@ -86,8 +86,6 @@ y = jnp.arange(10)
 arr_ds = jdl.ArrayDataset(X, y)
 ```
 
-    WARNING:jax._src.lib.xla_bridge:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
-
 This `arr_ds` can be loaded by both `"jax"` and `"pytorch"` dataloaders.
 
 ``` python
