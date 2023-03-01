@@ -54,13 +54,12 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 
 ## Usage
 
-[`jax_dataloader.core.DataLoader`](https://birkhoffg.github.io/jax-dataloader/core.html#dataloader)
-follows similar API as the pytorch dataloader.
+`jax_dataloader.core.DataLoader` follows similar API as the pytorch
+dataloader.
 
-- The `dataset` argument takes
-  [`jax_dataloader.core.Dataset`](https://birkhoffg.github.io/jax-dataloader/core.html#dataset)
-  or `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset`
-  as an input from which to load the data.
+- The `dataset` argument takes `jax_dataloader.core.Dataset` or
+  `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset` as
+  an input from which to load the data.
 - The `backend` argument takes `"jax"` or`"pytorch"` as an input, which
   specifies which backend dataloader to use batches.
 
@@ -69,14 +68,11 @@ import jax_dataloader.core as jdl
 import jax.numpy as jnp
 ```
 
-### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
+### Using `ArrayDataset`
 
-The
-[`jax_dataloader.core.ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
-is an easy way to wrap multiple `jax.numpy.array` into one Dataset. For
-example, we can create an
-[`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
-as follows:
+The `jax_dataloader.core.ArrayDataset` is an easy way to wrap multiple
+`jax.numpy.array` into one Dataset. For example, we can create an
+`ArrayDataset` as follows:
 
 ``` python
 # Create features `X` and labels `y`
