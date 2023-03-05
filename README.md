@@ -27,6 +27,20 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
   dataloader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader),
   tensorflow (forthcoming), and merlin (forthcoming).
 
+A minimum `jax_dataloader` example:
+
+``` python
+import jax_dataloader as jdl
+
+dataloader = jdl.DataLoader(
+    dataset, # can be a jax_dataloader, pytorch or huggingface dataset
+    backend='jax', # use 'jax' for loading data (also supports `pytorch`)
+    batch_size=32
+)
+
+batch = next(iter(dataloader)) # iterate next batch
+```
+
 ## Installation
 
 The latest `jax_dataloader` release can directly be installed from PyPI:
@@ -54,25 +68,29 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 
 ## Usage
 
-`jax_dataloader.core.DataLoader` follows similar API as the pytorch
-dataloader.
+[`jax_dataloader.core.DataLoader`](https://birkhoffg.github.io/jax-dataloader/core.html#dataloader)
+follows similar API as the pytorch dataloader.
 
-- The `dataset` argument takes `jax_dataloader.core.Dataset` or
-  `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset` as
-  an input from which to load the data.
+- The `dataset` argument takes
+  [`jax_dataloader.core.Dataset`](https://birkhoffg.github.io/jax-dataloader/core.html#dataset)
+  or `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset`
+  as an input from which to load the data.
 - The `backend` argument takes `"jax"` or`"pytorch"` as an input, which
   specifies which backend dataloader to use batches.
 
 ``` python
-import jax_dataloader.core as jdl
+import jax_dataloader as jdl
 import jax.numpy as jnp
 ```
 
-### Using `ArrayDataset`
+### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
 
-The `jax_dataloader.core.ArrayDataset` is an easy way to wrap multiple
-`jax.numpy.array` into one Dataset. For example, we can create an
-`ArrayDataset` as follows:
+The
+[`jax_dataloader.core.ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
+is an easy way to wrap multiple `jax.numpy.array` into one Dataset. For
+example, we can create an
+[`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
+as follows:
 
 ``` python
 # Create features `X` and labels `y`
