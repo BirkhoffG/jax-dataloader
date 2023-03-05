@@ -16,8 +16,7 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 `jax`. It supports
 
 - **downloading and pre-processing datasets** via [huggingface
-  datasets](https://github.com/huggingface/datasets) (recommended),
-  [pytorch
+  datasets](https://github.com/huggingface/datasets), [pytorch
   Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset),
   and tensorflow dataset (forthcoming)
 
@@ -33,7 +32,7 @@ A minimum `jax_dataloader` example:
 import jax_dataloader as jdl
 
 dataloader = jdl.DataLoader(
-    dataset, # can be a jax_dataloader, pytorch or huggingface dataset
+    dataset, # can be a jdl.Dataset, pytorch or huggingface dataset
     backend='jax', # use 'jax' for loading data (also supports `pytorch`)
     batch_size=32
 )

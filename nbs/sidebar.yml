@@ -2,4 +2,7 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - core.ipynb
+      - section: API
+        contents:
+        - core.ipynb
+      # - torch_mnist.ipynb
