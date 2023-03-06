@@ -121,7 +121,7 @@ def _has_tensor(batch) -> bool:
 
 # %% ../nbs/core.ipynb 18
 class TorchDataset(Dataset):
-    """A Dataset class that wraps a pytorch Dataset."""
+    """(Deprecated) A Dataset class that wraps a pytorch Dataset."""
     
     def __init__(
         self, 
@@ -144,7 +144,7 @@ class TorchDataset(Dataset):
 
 # %% ../nbs/core.ipynb 28
 class HFDataset(Dataset):
-    """A Dataset class that wraps a huggingface Dataset."""
+    """(Deprecated) A Dataset class that wraps a huggingface Dataset."""
     
     def __init__(
         self, 
@@ -168,7 +168,7 @@ class BaseDataLoader:
     """Dataloader Interface"""
     def __init__(
         self, 
-        dataset, 
+        dataset: Dataset, 
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         drop_last: bool = False,
@@ -191,7 +191,7 @@ class DataLoaderJax(BaseDataLoader):
 
     def __init__(
         self, 
-        dataset: Dataset,
+        dataset,
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # drop last batches or not
@@ -228,12 +228,12 @@ class DataLoaderJax(BaseDataLoader):
     def __next__(self):
         if self.pose + self.batch_size <= self.data_len:
             batch_indices = self.indices[self.pose: self.pose + self.batch_size]
-            batch_data = self.dataset[batch_indices, ...]
+            batch_data = self.dataset[batch_indices]
             self.pose += self.batch_size
             return batch_data
         elif self.pose < self.data_len and not self.drop_last:
             batch_indices = self.indices[self.pose:]
-            batch_data = self.dataset[batch_indices, ...]
+            batch_data = self.dataset[batch_indices]
             self.pose += self.batch_size
             return batch_data
         else:
@@ -243,13 +243,15 @@ class DataLoaderJax(BaseDataLoader):
         return self
 
 # %% ../nbs/core.ipynb 41
-# copy from https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html#data-loading-with-pytorch
+# adapted from https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html#data-loading-with-pytorch
 def _numpy_collate(batch):
-    if isinstance(batch[0], np.ndarray):
+    if isinstance(batch[0], (np.ndarray, jax.Array)):
         return np.stack(batch)
     elif isinstance(batch[0], (tuple, list)):
         transposed = zip(*batch)
         return [_numpy_collate(samples) for samples in transposed]
+    elif isinstance(batch[0], dict):
+        return {key: _numpy_collate([d[key] for d in batch]) for key in batch[0]}
     else:
         return np.array(batch)
 
@@ -266,7 +268,7 @@ class DataLoaderPytorch(BaseDataLoader):
     """Pytorch Dataloader"""
     def __init__(
         self, 
-        dataset: Dataset,
+        dataset,
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
@@ -275,7 +277,7 @@ class DataLoaderPytorch(BaseDataLoader):
         super().__init__(dataset, batch_size, shuffle, drop_last)
         _check_pytorch_installed()
         
-        dataset = _convert_dataset_pytorch(dataset)
+        # dataset = _convert_dataset_pytorch(dataset)
         self.dataloader = torch_data.DataLoader(
             dataset, 
             batch_size=batch_size, 
@@ -303,13 +305,19 @@ def _is_hf_dataset(dataset):
 
 def _dispatch_dataset(
     dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-):
+) -> Dataset:
     if isinstance(dataset, Dataset):
         return dataset
     elif torch_data and isinstance(dataset, torch_data.Dataset):
-        return TorchDataset(dataset)
+        # return TorchDataset(dataset)
+        # Give a warning if the dataset is not in numpy format
+        if _has_tensor(dataset[0]):
+            warnings.warn("The dataset contains `torch.Tensor`. "
+                "Please make sure the dataset is in numpy format.")
+        return dataset
     elif _is_hf_dataset(dataset):
-        return HFDataset(dataset)
+        # return HFDataset(dataset)
+        return dataset.with_format("jax")
     else:
         raise ValueError(f"dataset must be one of `jax_loader.core.Dataset`, "
                          "`torch.utils.data.Dataset`, `datasets.Dataset`, "
@@ -350,21 +358,38 @@ def _dispatch_dataloader(
     return dl_cls
 
 
+def _dispatch_dataset_and_backend(
+    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
+    backend: str # dataloader backend
+) -> Tuple[Dataset, BaseDataLoader]:
+    """Return Dataset and Dataloader class based on given `dataset` and `backend`"""
+
+    if isinstance(dataset, torch_data.Dataset) and backend != "pytorch":
+        raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
+                         "which is only supported by 'pytorch' backend."
+                         f"However, we got `backend={backend}`, which is not 'pytorch'.")
+
+    dataset = _dispatch_dataset(dataset)
+    
+    dl_cls = _dispatch_dataloader(backend)
+    return dataset, dl_cls
+        
+
 # %% ../nbs/core.ipynb 49
 class DataLoader:
     """Main Dataloader class to load Numpy data batches"""
+
     def __init__(
         self,
-        dataset: Dataset,
+        dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
         backend: str, # Dataloader backend
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # drop last batches or not
         **kwargs
     ):
-        dataset = _dispatch_dataset(dataset)
-        dataloader_cls = _dispatch_dataloader(backend)
-        self.dataloader = dataloader_cls(
+        dataset, dl_cls = _dispatch_dataset_and_backend(dataset, backend)
+        self.dataloader = dl_cls(
             dataset=dataset, 
             batch_size=batch_size, 
             shuffle=shuffle, 
