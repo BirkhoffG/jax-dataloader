@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://birkhoffg.github.io/jax-dataloader/core.html</loc>
+    <lastmod>2023-03-06T01:02:19.615Z</lastmod>
+  </url>
+  <url>
+    <loc>https://birkhoffg.github.io/jax-dataloader/index.html</loc>
+    <lastmod>2023-03-06T01:02:20.819Z</lastmod>
+  </url>
+  <url>
+    <loc>https://birkhoffg.github.io/jax-dataloader/torch_mnist.html</loc>
+    <lastmod>2023-03-06T01:02:21.255Z</lastmod>
+  </url>
+</urlset>

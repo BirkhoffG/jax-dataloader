@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.242">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Support various dataloader for loading batches.">
+
+<title>Jax-Dataloader - Dataloader</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Jax-Dataloader - Dataloader">
+<meta property="og:description" content="Support various dataloader for loading batches.">
+<meta property="og:site-name" content="Jax-Dataloader">
+<meta name="twitter:title" content="Jax-Dataloader - Dataloader">
+<meta name="twitter:description" content="Support various dataloader for loading batches.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Jax-Dataloader</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools ms-auto">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./core.html">Dataloader</a></li></ol></nav>
+      <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Jax-Dataloader</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Dataloader</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./torch_mnist.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torch_mnist.html</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#prngsequence" id="toc-prngsequence" class="nav-link active" data-scroll-target="#prngsequence">PRNGSequence</a></li>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a>
+  <ul>
+  <li><a href="#dataset-1" id="toc-dataset-1" class="nav-link" data-scroll-target="#dataset-1">Dataset</a></li>
+  <li><a href="#arraydataset" id="toc-arraydataset" class="nav-link" data-scroll-target="#arraydataset">ArrayDataset</a></li>
+  <li><a href="#torchdataset" id="toc-torchdataset" class="nav-link" data-scroll-target="#torchdataset">TorchDataset</a></li>
+  <li><a href="#hfdataset" id="toc-hfdataset" class="nav-link" data-scroll-target="#hfdataset">HFDataset</a></li>
+  </ul></li>
+  <li><a href="#dataloader" id="toc-dataloader" class="nav-link" data-scroll-target="#dataloader">Dataloader</a>
+  <ul>
+  <li><a href="#basedataloader" id="toc-basedataloader" class="nav-link" data-scroll-target="#basedataloader">BaseDataLoader</a></li>
+  </ul></li>
+  <li><a href="#jax-dataloader" id="toc-jax-dataloader" class="nav-link" data-scroll-target="#jax-dataloader">Jax Dataloader</a>
+  <ul>
+  <li><a href="#dataloaderjax" id="toc-dataloaderjax" class="nav-link" data-scroll-target="#dataloaderjax">DataLoaderJax</a></li>
+  </ul></li>
+  <li><a href="#pytorch-dataloader" id="toc-pytorch-dataloader" class="nav-link" data-scroll-target="#pytorch-dataloader">Pytorch Dataloader</a>
+  <ul>
+  <li><a href="#dataloaderpytorch" id="toc-dataloaderpytorch" class="nav-link" data-scroll-target="#dataloaderpytorch">DataLoaderPytorch</a></li>
+  </ul></li>
+  <li><a href="#main-dataloader-class" id="toc-main-dataloader-class" class="nav-link" data-scroll-target="#main-dataloader-class">Main Dataloader Class</a>
+  <ul>
+  <li><a href="#dataloaderbackends" id="toc-dataloaderbackends" class="nav-link" data-scroll-target="#dataloaderbackends">DataloaderBackends</a></li>
+  <li><a href="#dispatch_dataloader" id="toc-dispatch_dataloader" class="nav-link" data-scroll-target="#dispatch_dataloader">_dispatch_dataloader</a></li>
+  <li><a href="#dataloader-1" id="toc-dataloader-1" class="nav-link" data-scroll-target="#dataloader-1">DataLoader</a>
+  <ul class="collapse">
+  <li><a href="#a-minimum-example-of-using-dataloader" id="toc-a-minimum-example-of-using-dataloader" class="nav-link" data-scroll-target="#a-minimum-example-of-using-dataloader">A Minimum Example of using Dataloader</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/birkhoffg/jax-dataloader/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Dataloader</h1>
+</div>
+
+<div>
+  <div class="description">
+    Support various dataloader for loading batches.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L51" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="prngsequence" class="level3">
+<h3 class="anchored" data-anchor-id="prngsequence">PRNGSequence</h3>
+<blockquote class="blockquote">
+<pre><code> PRNGSequence (seed:int)</code></pre>
+</blockquote>
+<p>An Interator of Jax PRNGKey (minimal version of haiku.PRNGSequence).</p>
+</section>
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L84" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dataset-1" class="level3">
+<h3 class="anchored" data-anchor-id="dataset-1">Dataset</h3>
+<blockquote class="blockquote">
+<pre><code> Dataset ()</code></pre>
+</blockquote>
+<p>A pytorch-like Dataset class.</p>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L94" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="arraydataset" class="level3">
+<h3 class="anchored" data-anchor-id="arraydataset">ArrayDataset</h3>
+<blockquote class="blockquote">
+<pre><code> ArrayDataset (*arrays:jnp.DeviceArray)</code></pre>
+</blockquote>
+<p>Dataset wrapping numpy arrays.</p>
+<p>This is similar to <a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.TensorDataset">torch.utils.data.TensorDataset</a>, but it wrapps numpy arrays.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> jnp.arange(<span class="dv">10000</span>).reshape(<span class="dv">1000</span>, <span class="dv">10</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> jnp.arange(<span class="dv">1000</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ArrayDataset(X, y)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(ds) <span class="op">==</span> <span class="dv">1000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>WARNING:jax._src.lib.xla_bridge:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)</code></pre>
+</div>
+</div>
+<p>We index numpy arrays along the first dimension. Dataset indexing is done via <code>ds[index]</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x1, y1 <span class="op">=</span> ds[<span class="dv">1</span>] <span class="co"># get the first sample</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> jnp.array_equal(x1, X[<span class="dv">1</span>])</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> jnp.array_equal(y1, y[<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L123" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="torchdataset" class="level3">
+<h3 class="anchored" data-anchor-id="torchdataset">TorchDataset</h3>
+<blockquote class="blockquote">
+<pre><code> TorchDataset (dataset:torch_data.Dataset)</code></pre>
+</blockquote>
+<p>(Deprecated) A Dataset class that wraps a pytorch Dataset.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td>torch_data.Dataset</td>
+<td>Pytorch Dataset</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://birkhoffg.github.io/jax-dataloader/core.html#torchdataset"><code>TorchDataset</code></a> is a wrapper class of <code>torch.utils.data</code>. It does not modify inner behavior of the input pytorch <code>dataset</code>.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><a href="https://birkhoffg.github.io/jax-dataloader/core.html#torchdataset"><code>TorchDataset</code></a> will <strong>NOT</strong> turn a <code>torch.Tensor</code> into <code>numpy.array</code>. Therefore, it is suggested to ensure the input <code>dataset</code> is in numpy format before passing to the <a href="https://birkhoffg.github.io/jax-dataloader/core.html#torchdataset"><code>TorchDataset</code></a>. <a href="https://birkhoffg.github.io/jax-dataloader/core.html#torchdataset"><code>TorchDataset</code></a> will give a warning if <code>torch.Tensor</code> is found in the dataset.</p>
+</div>
+</div>
+<p>Let’s load the <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a> dataset using the Pytorch Dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> TensorDataset</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.datasets <span class="im">import</span> MNIST</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We flatten and cast the PIL image into the <code>numpy.array</code> (brought from <a href="https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html">jax official tutorial</a>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FlattenAndCast(<span class="bu">object</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__call__</span>(<span class="va">self</span>, pic):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.ravel(np.array(pic, dtype<span class="op">=</span><span class="bu">float</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We load the pytorch <a href="https://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST">MNIST</a> dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mnist_torch <span class="op">=</span> MNIST(<span class="st">'/tmp/mnist/'</span>, download<span class="op">=</span><span class="va">True</span>, transform<span class="op">=</span>FlattenAndCast())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, we can wrape the <code>mnist_torch</code> as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mnist_ds <span class="op">=</span> TorchDataset(mnist_torch)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(mnist_ds[<span class="dv">0</span>][<span class="dv">0</span>], np.ndarray)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L146" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="hfdataset" class="level3">
+<h3 class="anchored" data-anchor-id="hfdataset">HFDataset</h3>
+<blockquote class="blockquote">
+<pre><code> HFDataset (dataset:hf_datasets.Dataset)</code></pre>
+</blockquote>
+<p>(Deprecated) A Dataset class that wraps a huggingface Dataset.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td>hf_datasets.Dataset</td>
+<td>Huggingface Dataset</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://birkhoffg.github.io/jax-dataloader/core.html#hfdataset"><code>HFDataset</code></a> wraps a huggingface dataset. Unlike <a href="https://birkhoffg.github.io/jax-dataloader/core.html#torchdataset"><code>TorchDataset</code></a>, <a href="https://birkhoffg.github.io/jax-dataloader/core.html#hfdataset"><code>HFDataset</code></a> will ensure the input dataset with the format of <code>jax.DeviceArray</code>.</p>
+<p>Again, we load the <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a> dataset, but load the data via the huggingface datasets.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mnist_hf <span class="op">=</span> load_dataset(<span class="st">"mnist"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We wrap the <code>mnist_hf</code> as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mnist_ds <span class="op">=</span> HFDataset(mnist_hf)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(mnist_ds[<span class="dv">0</span>][<span class="st">'image'</span>], jnp.ndarray)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="dataloader" class="level2">
+<h2 class="anchored" data-anchor-id="dataloader">Dataloader</h2>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L167" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="basedataloader" class="level3">
+<h3 class="anchored" data-anchor-id="basedataloader">BaseDataLoader</h3>
+<blockquote class="blockquote">
+<pre><code> BaseDataLoader (dataset:Dataset, batch_size:int=1, shuffle:bool=False,
+                 drop_last:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p>Dataloader Interface</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td>Dataset</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>batch_size</td>
+<td>int</td>
+<td>1</td>
+<td>batch size</td>
+</tr>
+<tr class="odd">
+<td>shuffle</td>
+<td>bool</td>
+<td>False</td>
+<td>if true, dataloader shuffles before sampling each batch</td>
+</tr>
+<tr class="even">
+<td>drop_last</td>
+<td>bool</td>
+<td>False</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="jax-dataloader" class="level2">
+<h2 class="anchored" data-anchor-id="jax-dataloader">Jax Dataloader</h2>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L189" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dataloaderjax" class="level3">
+<h3 class="anchored" data-anchor-id="dataloaderjax">DataLoaderJax</h3>
+<blockquote class="blockquote">
+<pre><code> DataLoaderJax (dataset, batch_size:int=1, shuffle:bool=False,
+                drop_last:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p>Dataloder in Vanilla Jax</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>batch_size</td>
+<td>int</td>
+<td>1</td>
+<td>batch size</td>
+</tr>
+<tr class="odd">
+<td>shuffle</td>
+<td>bool</td>
+<td>False</td>
+<td>if true, dataloader shuffles before sampling each batch</td>
+</tr>
+<tr class="even">
+<td>drop_last</td>
+<td>bool</td>
+<td>False</td>
+<td>drop last batches or not</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="pytorch-dataloader" class="level2">
+<h2 class="anchored" data-anchor-id="pytorch-dataloader">Pytorch Dataloader</h2>
+<p>Use <code>Pytorch</code> to load batches. It requires <a href="https://pytorch.org/get-started/">pytorch</a> to be installed.</p>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L267" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dataloaderpytorch" class="level3">
+<h3 class="anchored" data-anchor-id="dataloaderpytorch">DataLoaderPytorch</h3>
+<blockquote class="blockquote">
+<pre><code> DataLoaderPytorch (dataset, batch_size:int=1, shuffle:bool=False,
+                    drop_last:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p>Pytorch Dataloader</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>batch_size</td>
+<td>int</td>
+<td>1</td>
+<td>Batch size</td>
+</tr>
+<tr class="odd">
+<td>shuffle</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, dataloader shuffles before sampling each batch</td>
+</tr>
+<tr class="even">
+<td>drop_last</td>
+<td>bool</td>
+<td>False</td>
+<td>Drop last batch or not</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="main-dataloader-class" class="level2">
+<h2 class="anchored" data-anchor-id="main-dataloader-class">Main Dataloader Class</h2>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L328" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dataloaderbackends" class="level3">
+<h3 class="anchored" data-anchor-id="dataloaderbackends">DataloaderBackends</h3>
+<blockquote class="blockquote">
+<pre><code> DataloaderBackends (jax:BaseDataLoader=&lt;class '__main__.DataLoaderJax'&gt;,
+                     pytorch:BaseDataLoader=&lt;class
+                     '__main__.DataLoaderPytorch'&gt;,
+                     tensorflow:BaseDataLoader=None,
+                     merlin:BaseDataLoader=None)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L348" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="dispatch_dataloader" class="level3">
+<h3 class="anchored" data-anchor-id="dispatch_dataloader">_dispatch_dataloader</h3>
+<blockquote class="blockquote">
+<pre><code> _dispatch_dataloader (backend:str)</code></pre>
+</blockquote>
+<p>Return Dataloader class based on given <code>backend</code></p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>backend</td>
+<td>str</td>
+<td>dataloader backend</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>BaseDataLoader</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/birkhoffg/jax-dataloader/blob/master/jax_dataloader/core.py#L379" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="dataloader-1" class="level3">
+<h3 class="anchored" data-anchor-id="dataloader-1">DataLoader</h3>
+<blockquote class="blockquote">
+<pre><code> DataLoader (dataset, backend:str, batch_size:int=1, shuffle:bool=False,
+             drop_last:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p>Main Dataloader class to load Numpy data batches</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dataset</td>
+<td></td>
+<td></td>
+<td>Dataset or Pytorch Dataset or HuggingFace Dataset</td>
+</tr>
+<tr class="even">
+<td>backend</td>
+<td>str</td>
+<td></td>
+<td>Dataloader backend</td>
+</tr>
+<tr class="odd">
+<td>batch_size</td>
+<td>int</td>
+<td>1</td>
+<td>batch size</td>
+</tr>
+<tr class="even">
+<td>shuffle</td>
+<td>bool</td>
+<td>False</td>
+<td>if true, dataloader shuffles before sampling each batch</td>
+</tr>
+<tr class="odd">
+<td>drop_last</td>
+<td>bool</td>
+<td>False</td>
+<td>drop last batches or not</td>
+</tr>
+<tr class="even">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="a-minimum-example-of-using-dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="a-minimum-example-of-using-dataloader">A Minimum Example of using Dataloader</h4>
+<p>We showcase how to use <code>Dataloader</code> for training a simple regression model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_regression</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> optax</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> haiku <span class="im">as</span> hk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_regression(n_samples<span class="op">=</span><span class="dv">500</span>, n_features<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> ArrayDataset(X, y.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> hk.PRNGSequence(<span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Define <code>loss</code>, <code>step</code>, <code>train</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loss(w, x, y):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> jnp.mean(vmap(optax.l2_loss)(x <span class="op">@</span> w.T, y))</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step(w, x, y):</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    lr <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    grad <span class="op">=</span> jax.grad(loss)(w, x, y)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    w <span class="op">-=</span> lr <span class="op">*</span> grad</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> w</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train(dataloader: DataLoader, key: jax.random.PRNGKey):</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> jax.random.normal(key, shape<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">20</span>))</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    n_epochs <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x, y <span class="kw">in</span> dataloader:</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>            w <span class="op">=</span> step(w, x, y)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> w</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">eval</span>(dataloader: DataLoader, w):</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> []</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x, y <span class="kw">in</span> dataloader:</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>        err.append(loss(w, x, y))</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.mean(err)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Train this linear regression model via <a href="https://birkhoffg.github.io/jax-dataloader/core.html#dataloaderjax"><code>DataLoaderJax</code></a>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dataloader <span class="op">=</span> DataLoader(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    dataset, <span class="st">'jax'</span>, batch_size<span class="op">=</span><span class="dv">128</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> train(dataloader, <span class="bu">next</span>(keys)).block_until_ready()</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># assert np.allclose(eval(dataloader, w), 0.)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>dataloader <span class="op">=</span> DataLoader(dataset, <span class="st">'jax'</span>, batch_size<span class="op">=</span><span class="dv">200</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> train(dataloader, <span class="bu">next</span>(keys)).block_until_ready()</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"># assert np.allclose(eval(dataloader, w), 0.)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Train this linear regression model via <a href="https://birkhoffg.github.io/jax-dataloader/core.html#dataloaderpytorch"><code>DataLoaderPytorch</code></a>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>dataloader <span class="op">=</span> DataLoader(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    dataset, <span class="st">'pytorch'</span>, batch_size<span class="op">=</span><span class="dv">128</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> train(dataloader, <span class="bu">next</span>(keys)).block_until_ready()</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># assert np.allclose(eval(dataloader, w), 0.)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
