@@ -32,9 +32,8 @@ A minimum `jax_dataloader` example:
 import jax_dataloader as jdl
 
 dataloader = jdl.DataLoader(
-    dataset, # can be a jdl.Dataset, pytorch or huggingface dataset
-    backend='jax', # use 'jax' for loading data (also supports `pytorch`)
-    batch_size=32
+    dataset, # Can be a jdl.Dataset or pytorch or huggingface dataset
+    backend='jax', # Use 'jax' for loading data (also supports `pytorch`)
 )
 
 batch = next(iter(dataloader)) # iterate next batch
