@@ -364,7 +364,7 @@ def _dispatch_dataset_and_backend(
 ) -> Tuple[Dataset, BaseDataLoader]:
     """Return Dataset and Dataloader class based on given `dataset` and `backend`"""
 
-    if isinstance(dataset, torch_data.Dataset) and backend != "pytorch":
+    if backend != "pytorch" and isinstance(dataset, torch_data.Dataset):
         raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
                          "which is only supported by 'pytorch' backend."
                          f"However, we got `backend={backend}`, which is not 'pytorch'.")
