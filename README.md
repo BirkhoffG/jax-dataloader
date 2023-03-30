@@ -116,7 +116,7 @@ pytorch Dataset.
 
 <div>
 
-> **Important**
+> **Note**
 >
 > Unfortuantely, the [pytorch
 > Dataset](https://pytorch.org/docs/stable/data.html) can only work with
