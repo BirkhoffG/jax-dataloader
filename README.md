@@ -69,10 +69,9 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 [`jax_dataloader.core.DataLoader`](https://birkhoffg.github.io/jax-dataloader/core.html#dataloader)
 follows similar API as the pytorch dataloader.
 
-- The `dataset` argument takes
-  [`jax_dataloader.core.Dataset`](https://birkhoffg.github.io/jax-dataloader/core.html#dataset)
-  or `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset`
-  as an input from which to load the data.
+- The `dataset` argument takes `jax_dataloader.core.Dataset` or
+  `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset` as
+  an input from which to load the data.
 - The `backend` argument takes `"jax"` or`"pytorch"` as an input, which
   specifies which backend dataloader to use batches.
 
@@ -81,13 +80,11 @@ import jax_dataloader as jdl
 import jax.numpy as jnp
 ```
 
-### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
+### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/dataset.html#arraydataset)
 
-The
-[`jax_dataloader.core.ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
-is an easy way to wrap multiple `jax.numpy.array` into one Dataset. For
-example, we can create an
-[`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/core.html#arraydataset)
+The `jax_dataloader.core.ArrayDataset` is an easy way to wrap multiple
+`jax.numpy.array` into one Dataset. For example, we can create an
+[`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/dataset.html#arraydataset)
 as follows:
 
 ``` python
@@ -105,6 +102,50 @@ This `arr_ds` can be loaded by both `"jax"` and `"pytorch"` dataloaders.
 dataloader = jdl.DataLoader(arr_ds, 'jax', batch_size=5, shuffle=True)
 # Or we can use the pytorch backend
 dataloader = jdl.DataLoader(arr_ds, 'pytorch', batch_size=5, shuffle=True)
+```
+
+### Using Pytorch Datasets
+
+The [pytorch Dataset](https://pytorch.org/docs/stable/data.html) and its
+ecosystems (e.g.,
+[torchvision](https://pytorch.org/vision/stable/index.html),
+[torchtext](https://pytorch.org/text/stable/index.html),
+[torchaudio](https://pytorch.org/audio/stable/index.html)) supports many
+built-in datasets. `jax_dataloader` supports directly passing the
+pytorch Dataset.
+
+<div>
+
+> **Important**
+>
+> Unfortuantely, the [pytorch
+> Dataset](https://pytorch.org/docs/stable/data.html) can only work with
+> `backend=pytorch`. See the belowing example.
+
+</div>
+
+``` python
+from torchvision.datasets import MNIST
+import numpy as np
+```
+
+We load the MNIST dataset from `torchvision`. The `ToNumpy` object
+transforms images to `numpy.array`.
+
+``` python
+class ToNumpy(object):
+  def __call__(self, pic):
+    return np.array(pic, dtype=float)
+```
+
+``` python
+pt_ds = MNIST('/tmp/mnist/', download=True, transform=ToNumpy(), train=False)
+```
+
+This `pt_ds` can **only** be loaded via `"pytorch"` dataloaders.
+
+``` python
+dataloader = jdl.DataLoader(pt_ds, 'pytorch', batch_size=5, shuffle=True)
 ```
 
 ### Using Huggingface Datasets
@@ -127,7 +168,6 @@ This `hf_ds` can be loaded via `"jax"` and `"pytorch"` dataloaders.
 
 ``` python
 # Create a `DataLoader` from the `datasets.Dataset` via jax backend
-# TODO: This is currently not working
 dataloader = jdl.DataLoader(hf_ds['train'], 'jax', batch_size=5, shuffle=True)
 # Or we can use the pytorch backend
 dataloader = jdl.DataLoader(hf_ds['train'], 'pytorch', batch_size=5, shuffle=True)
