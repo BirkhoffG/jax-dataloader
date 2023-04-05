@@ -15,7 +15,7 @@ __all__ = ['DataloaderBackends', 'DataLoader']
 class DataloaderBackends:
     jax = DataLoaderJax
     pytorch: BaseDataLoader = DataLoaderPytorch
-    tensorflow: BaseDataLoader = None
+    tensorflow: BaseDataLoader = DataLoaderTensorflow
     merlin: BaseDataLoader = None
 
     __all__ = dict(
@@ -63,21 +63,19 @@ def _dispatch_dataset(
         return dataset
     elif is_hf_dataset(dataset):
         return dataset.with_format("jax")
+    elif is_tf_dataset(dataset):
+        return dataset
     else:
         raise ValueError(f"dataset must be one of `jax_loader.Dataset`, "
                          "`torch.utils.data.Dataset`, `datasets.Dataset`, "
                          f"but got {type(dataset)}")
 
 # %% ../nbs/core.ipynb 7
-def is_jdl_dataset(dataset):
-    return isinstance(dataset, Dataset)
-
-
 def _check_backend_compatibility(dataset, backend: str):
     compatible_set = {
         "jax": [is_jdl_dataset, is_hf_dataset],
         "pytorch": [is_jdl_dataset, is_torch_dataset, is_hf_dataset],
-        "tensorflow": [],
+        "tensorflow": [is_jdl_dataset, is_hf_dataset, is_tf_dataset],
         "merlin": [],
     }
     assert all([backend in compatible_set for backend in _get_backends()])
