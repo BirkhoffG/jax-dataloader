@@ -7,7 +7,7 @@ from .utils import *
 from .datasets import *
 
 # %% auto 0
-__all__ = ['BaseDataLoader', 'DataLoaderJax', 'DataLoaderPytorch']
+__all__ = ['BaseDataLoader', 'DataLoaderJax', 'DataLoaderPytorch', 'to_tf_dataset', 'DataLoaderTensorflow']
 
 # %% ../nbs/loader.ipynb 5
 class BaseDataLoader:
@@ -150,3 +150,43 @@ class DataLoaderPytorch(BaseDataLoader):
 
     def __iter__(self):
         return self.dataloader.__iter__()
+
+# %% ../nbs/loader.ipynb 14
+def to_tf_dataset(dataset) -> tf.data.Dataset:
+    if is_tf_dataset(dataset):
+        return dataset
+    elif is_hf_dataset(dataset):
+        return dataset.to_tf_dataset()
+    elif is_jdl_dataset(dataset):
+        return dataset.to_tf_dataset()
+    else:
+        raise ValueError(f"Dataset type {type(dataset)} is not supported.")
+
+# %% ../nbs/loader.ipynb 15
+class DataLoaderTensorflow(BaseDataLoader):
+    """Tensorflow Dataloader"""
+    def __init__(
+        self, 
+        dataset,
+        batch_size: int = 1,  # Batch size
+        shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
+        drop_last: bool = False, # Drop last batch or not
+        **kwargs
+    ):
+        super().__init__(dataset, batch_size, shuffle, drop_last)
+        check_tf_installed()
+        # Convert to tf dataset
+        ds = to_tf_dataset(dataset)
+        ds = ds.shuffle(buffer_size=len(dataset), seed=get_config().global_seed) if shuffle else ds
+        ds = ds.batch(batch_size, drop_remainder=drop_last)
+        ds = ds.prefetch(tf.data.AUTOTUNE)
+        self.dataloader = ds
+
+    def __len__(self):
+        return len(self.dataloader)
+
+    def __next__(self):
+        return next(self.dataloader)
+
+    def __iter__(self):
+        return self.dataloader.as_numpy_iterator()

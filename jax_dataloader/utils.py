@@ -3,10 +3,11 @@
 # %% ../nbs/utils.ipynb 3
 from __future__ import print_function, division, annotations
 from .imports import *
+import jax_dataloader as jdl
 
 # %% auto 0
 __all__ = ['Config', 'get_config', 'PRNGSequence', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
-           'is_hf_dataset', 'is_torch_dataset']
+           'check_tf_installed', 'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset']
 
 # %% ../nbs/utils.ipynb 4
 @dataclass
@@ -60,7 +61,7 @@ def has_pytorch_tensor(batch) -> bool:
         return True
     elif isinstance(batch[0], (tuple, list)):
         transposed = zip(*batch)
-        return any([_has_tensor(samples) for samples in transposed])
+        return any([has_pytorch_tensor(samples) for samples in transposed])
     else:
         return False
 
@@ -72,6 +73,13 @@ def check_hf_installed():
             "https://huggingface.co/docs/datasets/installation.html.")
 
 # %% ../nbs/utils.ipynb 12
+def check_tf_installed():
+    if tf is None:
+        raise ModuleNotFoundError("`tensorflow` library needs to be installed. "
+            "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
+            "https://www.tensorflow.org/install/pip.")
+
+# %% ../nbs/utils.ipynb 13
 def is_hf_dataset(dataset):
     return hf_datasets and (
         isinstance(dataset, hf_datasets.Dataset) 
@@ -79,6 +87,14 @@ def is_hf_dataset(dataset):
     )
 
 
-# %% ../nbs/utils.ipynb 13
+# %% ../nbs/utils.ipynb 14
 def is_torch_dataset(dataset):
     return torch_data and isinstance(dataset, torch_data.Dataset)
+
+# %% ../nbs/utils.ipynb 15
+def is_jdl_dataset(dataset):
+    return isinstance(dataset, jdl.Dataset)
+
+# %% ../nbs/utils.ipynb 16
+def is_tf_dataset(dataset):
+    return tf and isinstance(dataset, tf.data.Dataset)

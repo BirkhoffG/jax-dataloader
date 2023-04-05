@@ -22,3 +22,10 @@ except ModuleNotFoundError: hk = None
 try: import datasets as hf_datasets
 except ModuleNotFoundError: hf_datasets = None
 
+try:
+    import tensorflow as tf
+    import tensorflow_datasets as tfds
+except ModuleNotFoundError:
+    tf = None
+    tfds = None
+

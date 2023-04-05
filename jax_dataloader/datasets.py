@@ -17,6 +17,9 @@ class Dataset:
 
     def __getitem__(self, index):
         raise NotImplementedError
+    
+    def to_tf_dataset(self):
+        raise NotImplementedError
 
 # %% ../nbs/dataset.ipynb 5
 class ArrayDataset(Dataset):
@@ -35,6 +38,9 @@ class ArrayDataset(Dataset):
 
     def __getitem__(self, index):
         return tuple(arr[index] for arr in self.arrays)
+    
+    def to_tf_dataset(self):
+        return tf.data.Dataset.from_tensor_slices(self.arrays)
 
 # %% ../nbs/dataset.ipynb 10
 def _has_tensor(batch) -> bool:
