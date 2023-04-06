@@ -2,9 +2,8 @@ name: nbdev-ci
 on:
   workflow_dispatch:
   push:
-    paths: [ 'nbs/**', 'jax_dataloader/**' ]
+    branches: ["main", "master"]
   pull_request:
-    paths: [ 'nbs/**', 'jax_dataloader/**' ]
 
 jobs:
   nbdev-sync:
