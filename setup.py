@@ -22,13 +22,23 @@ licenses = {
 }
 statuses = [ '1 - Planning', '2 - Pre-Alpha', '3 - Alpha',
     '4 - Beta', '5 - Production/Stable', '6 - Mature', '7 - Inactive' ]
-py_versions = '3.6 3.7 3.8 3.9 3.10'.split()
+py_versions = '3.7 3.8 3.9 3.10 3.11'.split()
 
 requirements = cfg.get('requirements','').split()
 if cfg.get('pip_requirements'): requirements += cfg.get('pip_requirements','').split()
 min_python = cfg['min_python']
 lic = licenses.get(cfg['license'].lower(), (cfg['license'], None))
-dev_requirements = (cfg.get('dev_requirements') or '').split()
+
+tensorflow_requirements = (cfg.get('tensorflow_requirements') or '').split()
+huggingface_requirements = (cfg.get('huggingface_requirements') or '').split()
+torch_requirements = (cfg.get('torch_requirements') or '').split()
+all_requirements = requirements + tensorflow_requirements + huggingface_requirements + torch_requirements
+dev_requirements = all_requirements + (cfg.get('dev_requirements') or '').split()
+
+extras_require = {
+    'all': all_requirements, 'dev': dev_requirements,
+    'tensorflow': tensorflow_requirements, 'huggingface': huggingface_requirements, 'torch': torch_requirements
+}
 
 setuptools.setup(
     name = cfg['lib_name'],
@@ -42,7 +52,7 @@ setuptools.setup(
     packages = setuptools.find_packages(),
     include_package_data = True,
     install_requires = requirements,
-    extras_require={ 'dev': dev_requirements },
+    extras_require=extras_require,
     dependency_links = cfg.get('dep_links','').split(),
     python_requires  = '>=' + cfg['min_python'],
     long_description = open('README.md').read(),
