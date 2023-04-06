@@ -38,3 +38,23 @@ jobs:
 
       - name: Run Tests
         run: nbdev_test
+
+      - name: Install and Test Everything
+        run: |
+          pip install -e .[all]
+          nbdev_test --flags "torch hf tf"
+
+      # - name: Install and Test Torch
+      #   run: |
+      #     pip install -e .[torch]
+      #     nbdev_test --flags torch
+
+      # - name: Install and Test Huggingface
+      #   run: |
+      #     pip install -e .[huggingface]
+      #     nbdev_test --flags hf
+
+      # - name: Install and Test Tensorflow
+      #   run: |
+      #     pip install -e .[tensorflow]
+      #     nbdev_test --flags tf
