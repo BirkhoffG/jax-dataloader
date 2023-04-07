@@ -5,7 +5,7 @@ Jax-Dataloader
 
 ![Python](https://img.shields.io/pypi/pyversions/jax-dataloader.svg)
 ![CI
-status](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/test.yaml/badge.svg)
+status](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/nbdev.yaml/badge.svg)
 ![Docs](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/deploy.yaml/badge.svg)
 ![pypi](https://img.shields.io/pypi/v/jax-dataloader.svg) ![GitHub
 License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
@@ -59,7 +59,7 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 >
 > We will only install `jax`-related dependencies. If you wish to use
 > integration of `pytorch` or huggingface `datasets`, you should try to
-> manually install them, or run `pip install jax_dataloader[dev]` for
+> manually install them, or run `pip install jax_dataloader[all]` for
 > installing all the dependencies.
 
 </div>
@@ -130,7 +130,8 @@ import numpy as np
 ```
 
 We load the MNIST dataset from `torchvision`. The `ToNumpy` object
-transforms images to `numpy.array`.
+transforms images to
+[`numpy.array`](https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array).
 
 ``` python
 class ToNumpy(object):
