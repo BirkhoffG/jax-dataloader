@@ -1,0 +1,60 @@
+name: nbdev-ci
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  nbdev-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Library Sync
+        uses: fastai/workflows/nbdev-ci@master
+        with:
+          skip_test: true
+
+  nbdev-tests:
+    needs: nbdev-sync
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        py: ['3.8', '3.9', '3.10']
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.py }}
+          cache: "pip"
+          cache-dependency-path: settings.ini
+
+      - name: Install Library
+        run: |
+          pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run Tests
+        run: nbdev_test
+
+      - name: Install and Test Everything
+        run: |
+          pip install -e .[all]
+          nbdev_test --flags "torch hf tf"
+
+      # - name: Install and Test Torch
+      #   run: |
+      #     pip install -e .[torch]
+      #     nbdev_test --flags torch
+
+      # - name: Install and Test Huggingface
+      #   run: |
+      #     pip install -e .[huggingface]
+      #     nbdev_test --flags hf
+
+      # - name: Install and Test Tensorflow
+      #   run: |
+      #     pip install -e .[tensorflow]
+      #     nbdev_test --flags tf

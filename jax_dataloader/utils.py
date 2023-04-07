@@ -55,7 +55,7 @@ def check_pytorch_installed():
             "https://pytorch.org/get-started/.")
 
 
-# %% ../nbs/utils.ipynb 10
+# %% ../nbs/utils.ipynb 11
 def has_pytorch_tensor(batch) -> bool:
     if isinstance(batch[0], torch.Tensor):
         return True
@@ -65,21 +65,21 @@ def has_pytorch_tensor(batch) -> bool:
     else:
         return False
 
-# %% ../nbs/utils.ipynb 11
+# %% ../nbs/utils.ipynb 12
 def check_hf_installed():
     if hf_datasets is None:
         raise ModuleNotFoundError("`datasets` library needs to be installed. "
             "Try `pip install datasets`. Please refer to huggingface documentation for details: "
             "https://huggingface.co/docs/datasets/installation.html.")
 
-# %% ../nbs/utils.ipynb 12
+# %% ../nbs/utils.ipynb 14
 def check_tf_installed():
     if tf is None:
         raise ModuleNotFoundError("`tensorflow` library needs to be installed. "
             "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
             "https://www.tensorflow.org/install/pip.")
 
-# %% ../nbs/utils.ipynb 13
+# %% ../nbs/utils.ipynb 16
 def is_hf_dataset(dataset):
     return hf_datasets and (
         isinstance(dataset, hf_datasets.Dataset) 
@@ -87,14 +87,14 @@ def is_hf_dataset(dataset):
     )
 
 
-# %% ../nbs/utils.ipynb 14
+# %% ../nbs/utils.ipynb 17
 def is_torch_dataset(dataset):
     return torch_data and isinstance(dataset, torch_data.Dataset)
 
-# %% ../nbs/utils.ipynb 15
+# %% ../nbs/utils.ipynb 18
 def is_jdl_dataset(dataset):
     return isinstance(dataset, jdl.Dataset)
 
-# %% ../nbs/utils.ipynb 16
+# %% ../nbs/utils.ipynb 19
 def is_tf_dataset(dataset):
     return tf and isinstance(dataset, tf.data.Dataset)
