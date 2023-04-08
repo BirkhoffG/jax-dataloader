@@ -1,0 +1,109 @@
+# Site
+site_name: Jax-Dataloader
+site_url: https://birkhoffg.github.io/jax-dataloader
+site_author: BirkhoffG
+site_description: Dataloader for jax
+
+# Repository
+repo_name: jax-dataloader
+repo_url: https://github.com/birkhoffg/jax-dataloader
+edit_uri: ""
+
+copyright: 2023 onwards, BirkhoffG
+
+docs_dir: docs
+site_dir: site
+
+plugins:
+- literate-nav:
+    nav_file: SUMMARY.md
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        import:
+        - https://docs.python.org/3/objects.inv
+        options:
+          heading_level: 2
+          show_category_heading: true
+          show_root_heading: true
+          show_root_toc_entry: true
+          show_signature_annotations: true
+          show_if_no_docstring: true
+
+markdown_extensions:
+- md_in_html
+- pymdownx.arithmatex:
+    generic: true
+- pymdownx.inlinehilite
+- pymdownx.details
+- pymdownx.emoji
+- pymdownx.magiclink
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format
+- pymdownx.tasklist
+- pymdownx.highlight:
+    linenums: false
+- pymdownx.snippets:
+    check_paths: true
+- pymdownx.tabbed:
+    alternate_style: true
+- admonition
+- toc:
+    permalink: "¤"
+#     - callouts
+theme:
+  name: material
+  custom_dir: site_overrides
+  features:
+  - navigation.instant
+#     - navigation.tabs
+#     - navigation.tabs.sticky
+#     - navigation.sections
+#     - navigation.expand
+  - navigation.indexes
+  - navigation.top
+#     - toc.integrates
+  - search.suggest
+  - search.highlight
+  - search.share
+  palette:
+  # Palette toggle for light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: white   # deep orange
+    accent: red
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: orange
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to light mode
+  
+  icon:
+    repo: fontawesome/brands/github
+#     repo: fontawesome/brands/gitlab
+    logo: material/compass-outline
+#     admonition:
+#         <type>: <icon> 
+  favicon: overrides/images/compass-outline.png
+
+extra_css:
+- overrides/css/extra.css
+
+extra_javascript:
+- overrides/js/extra.js
+- overrides/js/mathjax.js
+- https://polyfill.io/v3/polyfill.min.js?features=es6
+- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+extra:
+  version:
+    provider: mike
+  social_image: "https://opengraph.githubassets.com/1680833009.915228/birkhoffg/jax-dataloader"

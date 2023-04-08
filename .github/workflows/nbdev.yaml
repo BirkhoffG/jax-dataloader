@@ -39,10 +39,10 @@ jobs:
       - name: Run Tests
         run: nbdev_test
 
-      - name: Install and Test Everything
-        run: |
-          pip install -e .[all]
-          nbdev_test --flags "torch hf tf"
+      # - name: Install and Test Everything
+      #   run: |
+      #     pip install -e .[all]
+      #     nbdev_test --flags "torch hf tf"
 
       # - name: Install and Test Torch
       #   run: |

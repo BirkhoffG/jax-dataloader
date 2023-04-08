@@ -36,7 +36,7 @@ dev_requirements = (cfg.get('dev_requirements') or '').split()
 all_requirements = requirements + tensorflow_requirements + huggingface_requirements + torch_requirements + dev_requirements
 
 extras_require = {
-    'all': all_requirements, 'dev': dev_requirements,
+    'all': all_requirements, 'dev': all_requirements,
     'tensorflow': tensorflow_requirements, 'huggingface': huggingface_requirements, 'torch': torch_requirements
 }
 
