@@ -18,18 +18,18 @@ plugins:
 - literate-nav:
     nav_file: SUMMARY.md
 - search
-- mkdocstrings:
-    handlers:
-      python:
-        import:
-        - https://docs.python.org/3/objects.inv
-        options:
-          heading_level: 2
-          show_category_heading: true
-          show_root_heading: true
-          show_root_toc_entry: true
-          show_signature_annotations: true
-          show_if_no_docstring: true
+# - mkdocstrings:
+#     handlers:
+#       python:
+#         import:
+#         - https://docs.python.org/3/objects.inv
+#         options:
+#           heading_level: 2
+#           show_category_heading: true
+#           show_root_heading: true
+#           show_root_toc_entry: true
+#           show_signature_annotations: true
+#           show_if_no_docstring: true
 
 markdown_extensions:
 - md_in_html

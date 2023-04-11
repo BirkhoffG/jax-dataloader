@@ -39,6 +39,9 @@ jobs:
       - name: Run Tests
         run: nbdev_test
 
+      - name: Run Docs
+        run: nbdev_mkdocs prepare
+
       # - name: Install and Test Everything
       #   run: |
       #     pip install -e .[all]
