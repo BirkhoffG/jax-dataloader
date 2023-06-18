@@ -9,10 +9,46 @@ jobs:
   nbdev-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Test Library Sync
-        uses: fastai/workflows/nbdev-ci@master
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          skip_test: true
+          python-version: "3.8"
+          cache: "pip"
+          cache-dependency-path: settings.ini
+
+      - name: Test ibrary Sync
+        shell: bash
+        run: |
+          set -ux
+          python -m pip install --upgrade pip
+          pip install -U nbdev
+          echo "Check we are starting with clean git checkout"
+          if [[ `git status --porcelain -uno` ]]; then
+            git diff
+            echo "git status is not clean"
+            false
+          fi
+          echo "Trying to strip out notebooks"
+          nbdev_clean
+          echo "Check that strip out was unnecessary"
+          git status -s # display the status to see which nbs need cleaning up
+          if [[ `git status --porcelain -uno` ]]; then
+            git status -uno
+            echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_hooks"
+            echo -e "This error can also happen if you are using an older version of nbdev relative to what is in CI.  Please try to upgrade nbdev with the command `pip install -U nbdev`"
+            false
+          fi
+          nbdev_export
+          if [[ `git status --porcelain -uno` ]]; then
+            echo "::error::Notebooks and library are not in sync.  Please run nbdev_export."
+            git status -uno
+            git diff
+            exit 1;
+          fi
+  
 
   nbdev-tests:
     needs: nbdev-sync
@@ -39,6 +75,22 @@ jobs:
 
       - name: Run Tests
         run: nbdev_test
+
+      - name: test docs build
+        if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.8' && matrix.os == 'ubuntu' }}
+        run: |
+          set -ux
+          wget -q $(curl https://latest.fast.ai/pre/quarto-dev/quarto-cli/linux-amd64.deb)
+          sudo dpkg -i quarto*.deb
+          nbdev_mkdocs docs
+          if [ -f "_docs/index.html" ]; then
+            echo "docs built successfully."
+          else
+            echo "index page not found in rendered docs."
+            ls -la
+            ls -la _docs
+            exit 1
+          fi
 
       # - name: Run Docs
       #   run: nbdev_mkdocs prepare
