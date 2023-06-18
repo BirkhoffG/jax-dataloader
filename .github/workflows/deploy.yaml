@@ -1,91 +1,100 @@
-name: Deploy to GitHub Pages
-description: 'Create docs with nbdev'
+name: Deploy nbdev-mkdocs generated documentation to GitHub Pages
+
 on:
   push:
-    branches: [master, main]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: ${{ inputs.version }}
-        cache: "pip"
-        cache-dependency-path: settings.ini
-    - name: Install Dependencies
-      env:
-        USE_PRE: ${{ inputs.pre }}
-      shell: bash
-      run: |
-        set -ux
-        python -m pip install --upgrade pip
-        pip install -Uq nbdev
-        test -f setup.py && pip install -e ".[all]"
-        nbdev_docs
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ inputs.ghtoken }}
-        force_orphan: true
-        publish_dir: ./_docs
-        # The following lines assign commit authorship to the official GH-Actions bot for deploys to `gh-pages` branch.
-        # You can swap them out with your own user credentials.
-        user_name: github-actions[bot]
-        user_email: 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: "pip"
+          cache-dependency-path: settings.ini
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          set -ux
+          python -m pip install --upgrade pip
+          pip install -Uq nbdev
+          nbdev_install_quarto
+          test -f setup.py && pip install -e ".[dev]"
+      - name: Build docs
+        shell: bash
+        run: |
+          # nbdev_docs
+          pip install git+https://github.com/BirkhoffG/nbdev-mkdocs.git -U
+          nbdev_mkdocs docs
+      - name: Read docs_versioning value from settings.ini
+        shell: bash
+        run: |
+          docs_versioning=$( { grep '^docs_versioning[[:space:]]*=' settings.ini || [[ $? == 1 ]]; } | awk -F = '{print $2}' | xargs)
+          if ! [[ "$docs_versioning" =~ ^(None|minor|patch|)$ ]]; then
+            echo "Error: Invalid value set for 'docs_versioning' in settings.ini file: $docs_versioning. Allowed values are None, minor and patch." >&2
+            exit 1
+          fi        
+          echo "DOCS_VERSIONING=$docs_versioning" >> $GITHUB_ENV
+      - name: Check if gh-pages branch exists in origin
+        shell: bash
+        run: |
+          remote_branches=$(git ls-remote --heads origin | awk '{print $2}')
+          target_branch="refs/heads/gh-pages"
+          is_gh_pages_exists=false
+          for branch in $remote_branches
+          do
+              if [ "$branch" == "$target_branch" ] 
+                  then
+                      is_gh_pages_exists=true
+              fi
+          done
+          echo "IS_GH_PAGES_EXISTS=$is_gh_pages_exists" >> $GITHUB_ENV
+      - name: Deploy to GitHub Pages
+        if: ${{ env.DOCS_VERSIONING == '' || env.DOCS_VERSIONING == 'None' || env.IS_GH_PAGES_EXISTS == 'false' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ github.token }}
+          force_orphan: true
+          publish_dir: ./mkdocs/site
+          # The following lines assign commit authorship to the official GH-Actions bot for deploys to `gh-pages` branch.
+          # You can swap them out with your own user credentials.
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Deploy to GitHub Pages using mike
+        if: ${{ env.DOCS_VERSIONING != '' && env.DOCS_VERSIONING != 'None' }}
+        shell: bash
+        run: |
+          git fetch origin gh-pages --depth=1
+          git config user.name github-bot
+          git config user.email github-bot@@users.noreply.github.com
+          
+          project_version=$(grep '^version[[:space:]]*=' settings.ini | awk -F = '{print $2}' | xargs)
+          doc_deployment_version="$project_version"
+          doc_deployment_tag="dev"
+          
+          pat="^[0-9]+([.][0-9]+)*$"
+          if [[ $project_version =~ $pat ]]; then
+            doc_deployment_tag="latest"
+            if [[ $DOCS_VERSIONING == "minor" ]]; then
+              doc_deployment_version="$(echo "$project_version" | sed 's/\.[^.]*$//')"
+            fi
+          fi
+          
+          echo "mike deploy --config-file mkdocs/mkdocs.yml --update-aliases $doc_deployment_version $doc_deployment_tag"
+          mike deploy --config-file mkdocs/mkdocs.yml --update-aliases $doc_deployment_version $doc_deployment_tag
+          mike set-default --config-file mkdocs/mkdocs.yml latest || mike set-default --config-file mkdocs/mkdocs.yml dev
+          
+          site_dir=$(grep '^site_dir[[:space:]]*:' mkdocs/mkdocs.yml | awk -F ':' '{print $2}' | xargs)
+          og_tags_to_add=$(grep -E '<meta property="og:|<meta name="twitter:' "mkdocs/$site_dir/index.html")
+          
+          git checkout gh-pages
+          destination_html_file="index.html"
+          destination_html=$(cat "$destination_html_file")
+          modified_destination_html=${destination_html/\<\/head\>/"$og_tags_to_add"$'\n'\<\/head\>}
+          echo "$modified_destination_html" > "$destination_html_file"
 
-
-# description: 'Create docs with nbdev'
-# inputs:
-#   pre:
-#     description: 'Install prerelease nbdev/execnb from master?'
-#     required: false
-#     default: ''
-#   version:
-#     description: 'Version of python to set up'
-#     required: false
-#     default: '3.9'
-#   ghtoken:
-#     description: 'GitHub token'
-#     default: ${{ github.token }}
-#     required: false
-
-# runs:
-#   using: "composite"
-#   steps:
-#     - uses: actions/checkout@v3
-#     - uses: actions/setup-python@v4
-#       with:
-#         python-version: ${{ inputs.version }}
-#         cache: "pip"
-#         cache-dependency-path: settings.ini
-#     - name: Install Dependencies
-#       env:
-#         USE_PRE: ${{ inputs.pre }}
-#       shell: bash
-#       run: |
-#         set -ux
-#         python -m pip install --upgrade pip
-#         if [ $USE_PRE ]; then
-#           pip install -Uq git+https://github.com/fastai/ghapi.git
-#           pip install -Uq git+https://github.com/fastai/fastcore.git
-#           pip install -Uq git+https://github.com/fastai/execnb.git
-#           pip install -Uq git+https://github.com/fastai/nbdev.git
-#           wget -q $(curl https://latest.fast.ai/pre/quarto-dev/quarto-cli/linux-amd64.deb)
-#           sudo dpkg -i quarto*.deb
-#         else
-#           pip install -Uq nbdev
-#         fi
-#         test -f setup.py && pip install -e ".[dev]"
-#         nbdev_docs
-#     - name: Deploy to GitHub Pages
-#       uses: peaceiris/actions-gh-pages@v3
-#       with:
-#         github_token: ${{ inputs.ghtoken }}
-#         force_orphan: true
-#         publish_dir: ./_docs
-#         # The following lines assign commit authorship to the official GH-Actions bot for deploys to `gh-pages` branch.
-#         # You can swap them out with your own user credentials.
-#         user_name: github-actions[bot]
-#         user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$destination_html_file"
+          git commit -m "Add og meta tags in index.html"
+          git push -u origin gh-pages

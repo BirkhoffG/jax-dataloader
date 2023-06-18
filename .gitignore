@@ -149,3 +149,8 @@ checklink/cookies.txt
 
 # Quarto
 .quarto
+
+
+# nbdev_mkdocs
+mkdocs/docs/
+mkdocs/site/

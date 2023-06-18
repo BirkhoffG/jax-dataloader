@@ -5,4 +5,6 @@ website:
       - section: API
         contents:
         - core.ipynb
-      # - torch_mnist.ipynb
+        - dataset.ipynb
+        - loader.ipynb
+        - utils.ipynb
