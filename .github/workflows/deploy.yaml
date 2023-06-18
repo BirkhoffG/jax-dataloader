@@ -1,4 +1,4 @@
-name: Deploy nbdev-mkdocs generated documentation to GitHub Pages
+name: Docs
 
 on:
   push:
