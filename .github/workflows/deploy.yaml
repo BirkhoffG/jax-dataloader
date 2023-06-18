@@ -20,6 +20,8 @@ jobs:
           set -ux
           python -m pip install --upgrade pip
           pip install -Uq nbdev
+          # install torch and torchvision for docs
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           nbdev_install_quarto
           test -f setup.py && pip install -e ".[dev]"
       - name: Build docs
