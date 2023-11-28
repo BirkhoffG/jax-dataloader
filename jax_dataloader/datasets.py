@@ -31,13 +31,13 @@ class ArrayDataset(Dataset):
     ):
         assert all(arrays[0].shape[0] == arr.shape[0] for arr in arrays), \
             "All arrays must have the same dimension."
-        self.arrays = arrays
+        self.arrays = tuple(arrays)
 
     def __len__(self):
         return self.arrays[0].shape[0]
 
     def __getitem__(self, index):
-        return tuple(arr[index] for arr in self.arrays)
+        return jax.tree_util.tree_map(lambda x: x[index], self.arrays)
     
     def to_tf_dataset(self):
         return tf.data.Dataset.from_tensor_slices(self.arrays)

@@ -9,7 +9,7 @@ from .datasets import *
 # %% auto 0
 __all__ = ['BaseDataLoader', 'DataLoaderJax', 'DataLoaderPytorch', 'to_tf_dataset', 'DataLoaderTensorflow']
 
-# %% ../nbs/loader.ipynb 5
+# %% ../nbs/loader.ipynb 6
 class BaseDataLoader:
     """Dataloader Interface"""
     
@@ -32,7 +32,7 @@ class BaseDataLoader:
     def __iter__(self):
         raise NotImplementedError
 
-# %% ../nbs/loader.ipynb 7
+# %% ../nbs/loader.ipynb 8
 class DataLoaderJax(BaseDataLoader):
     """Dataloder in Vanilla Jax"""
 
@@ -56,6 +56,8 @@ class DataLoaderJax(BaseDataLoader):
         self.pose = 0  # record the current position in the dataset
         self._shuffle()
 
+        self.num_batches = len(self)
+
     def _shuffle(self):
         if self.shuffle:
             self.indices = jax.random.permutation(next(self.keys), self.indices)
@@ -64,7 +66,7 @@ class DataLoaderJax(BaseDataLoader):
         self.pose = 0
         self._shuffle()
         raise StopIteration
-
+    
     def __len__(self):
         if self.drop_last:
             batches = len(self.dataset) // self.batch_size  # get the floor of division
@@ -73,15 +75,10 @@ class DataLoaderJax(BaseDataLoader):
         return batches
 
     def __next__(self):
-        if self.pose + self.batch_size <= self.data_len:
-            batch_indices = self.indices[self.pose: self.pose + self.batch_size]
+        if self.pose < self.num_batches:
+            batch_indices = self.indices[self.pose * self.batch_size: (self.pose + 1) * self.batch_size]
             batch_data = self.dataset[batch_indices]
-            self.pose += self.batch_size
-            return batch_data
-        elif self.pose < self.data_len and not self.drop_last:
-            batch_indices = self.indices[self.pose:]
-            batch_data = self.dataset[batch_indices]
-            self.pose += self.batch_size
+            self.pose += 1
             return batch_data
         else:
             self._stop_iteration()
@@ -89,7 +86,8 @@ class DataLoaderJax(BaseDataLoader):
     def __iter__(self):
         return self
 
-# %% ../nbs/loader.ipynb 10
+
+# %% ../nbs/loader.ipynb 14
 # adapted from https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html
 def _numpy_collate(batch):
     if isinstance(batch[0], (np.ndarray, jax.Array)):
@@ -110,7 +108,7 @@ def _convert_dataset_pytorch(dataset: Dataset):
     
     return DatasetPytorch(dataset)
 
-# %% ../nbs/loader.ipynb 11
+# %% ../nbs/loader.ipynb 15
 class DataLoaderPytorch(BaseDataLoader):
     """Pytorch Dataloader"""
     def __init__(
@@ -151,7 +149,7 @@ class DataLoaderPytorch(BaseDataLoader):
     def __iter__(self):
         return self.dataloader.__iter__()
 
-# %% ../nbs/loader.ipynb 14
+# %% ../nbs/loader.ipynb 18
 def to_tf_dataset(dataset) -> tf.data.Dataset:
     if is_tf_dataset(dataset):
         return dataset
@@ -162,7 +160,7 @@ def to_tf_dataset(dataset) -> tf.data.Dataset:
     else:
         raise ValueError(f"Dataset type {type(dataset)} is not supported.")
 
-# %% ../nbs/loader.ipynb 15
+# %% ../nbs/loader.ipynb 19
 class DataLoaderTensorflow(BaseDataLoader):
     """Tensorflow Dataloader"""
     def __init__(
