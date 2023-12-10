@@ -13,7 +13,7 @@ __all__ = ['DataloaderBackends', 'DataLoader']
 # %% ../nbs/core.ipynb 4
 @dataclass(frozen=True)
 class DataloaderBackends:
-    jax = DataLoaderJax
+    jax = DataLoaderJAX
     pytorch: BaseDataLoader = DataLoaderPytorch
     tensorflow: BaseDataLoader = DataLoaderTensorflow
     merlin: BaseDataLoader = None
