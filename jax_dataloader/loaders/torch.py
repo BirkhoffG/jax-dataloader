@@ -9,16 +9,18 @@ from ..utils import check_pytorch_installed
 from ..tests import *
 from jax.tree_util import tree_map
 
-# %% auto 0
-__all__ = ['DataLoaderPytorch']
 
-# %% ../../nbs/loader.torch.ipynb 4
+# %% auto 0
+__all__ = ['to_torch_dataset', 'DataLoaderPytorch']
+
+# %% ../../nbs/loader.torch.ipynb 5
 # adapted from https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html
 def _numpy_collate(batch):
   return tree_map(np.asarray, torch_data.default_collate(batch))
 
-# %% ../../nbs/loader.torch.ipynb 5
-def _convert_dataset_pytorch(dataset: Dataset):
+# %% ../../nbs/loader.torch.ipynb 6
+@dispatch
+def to_torch_dataset(dataset: Dataset) -> torch_data.Dataset:
     class DatasetPytorch(torch_data.Dataset):
         def __init__(self, dataset: Dataset): self.dataset = dataset
         def __len__(self): return len(self.dataset)
@@ -26,7 +28,12 @@ def _convert_dataset_pytorch(dataset: Dataset):
     
     return DatasetPytorch(dataset)
 
-# %% ../../nbs/loader.torch.ipynb 6
+# %% ../../nbs/loader.torch.ipynb 7
+@dispatch
+def to_torch_dataset(dataset: Union[torch_data.Dataset, hf_datasets.Dataset]):
+    return dataset
+
+# %% ../../nbs/loader.torch.ipynb 8
 class DataLoaderPytorch(BaseDataLoader):
     """Pytorch Dataloader"""
     
@@ -41,11 +48,12 @@ class DataLoaderPytorch(BaseDataLoader):
         super().__init__(dataset, batch_size, shuffle, drop_last)
         check_pytorch_installed()
         from torch.utils.data import BatchSampler, RandomSampler, SequentialSampler
-        
+
         if 'sampler' in kwargs:
             warnings.warn("`sampler` is currently not supported. We will ignore it and use `shuffle` instead.")
             del kwargs['sampler']
 
+        dataset = to_torch_dataset(dataset)
         sampler = RandomSampler(dataset) if shuffle else SequentialSampler(dataset)
         batch_sampler = BatchSampler(sampler, batch_size=batch_size, drop_last=drop_last)
 
