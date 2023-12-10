@@ -7,18 +7,19 @@ from ..datasets import ArrayDataset
 from . import BaseDataLoader
 from ..utils import get_config, asnumpy
 from ..tests import *
+import jax_dataloader as jdl
 from threading import Thread, Event
 from queue import Queue
 
 # %% auto 0
 __all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator', 'DataLoaderJAX']
 
-# %% ../../nbs/loader.jax.ipynb 5
+# %% ../../nbs/loader.jax.ipynb 4
 def chunk(seq: Sequence, size: int) -> List[Sequence]:
     return [seq[pos:pos + size] for pos in range(0, len(seq), size)]  
 
 
-# %% ../../nbs/loader.jax.ipynb 6
+# %% ../../nbs/loader.jax.ipynb 5
 def EpochIterator(
     data,
     batch_size: int,
@@ -28,7 +29,7 @@ def EpochIterator(
         idx = indices[i:i+batch_size]
         yield data[idx]
 
-# %% ../../nbs/loader.jax.ipynb 7
+# %% ../../nbs/loader.jax.ipynb 6
 class MultiprocessIterator(Thread):
     """[WIP] Multiprocessing Epoch Iterator"""
     
@@ -72,11 +73,13 @@ class MultiprocessIterator(Thread):
         return batch
 
 
-# %% ../../nbs/loader.jax.ipynb 8
+# %% ../../nbs/loader.jax.ipynb 7
 class DataLoaderJAX(BaseDataLoader):
+
+    @typecheck
     def __init__(
         self, 
-        dataset, 
+        dataset: Union[jdl.datasets.Dataset, hf_datasets.Dataset], 
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.

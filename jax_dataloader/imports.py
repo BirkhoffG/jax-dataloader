@@ -5,6 +5,8 @@ import jax
 from jax import vmap, grad, jit, numpy as jnp, random as jrand
 from abc import ABC
 from dataclasses import dataclass
+from plum import dispatch
+from beartype import beartype as typecheck
 
 try: 
     import torch.utils.data as torch_data

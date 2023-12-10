@@ -13,15 +13,17 @@ from jax.tree_util import tree_map
 __all__ = ['to_tf_dataset', 'DataLoaderTensorflow']
 
 # %% ../../nbs/loader.tf.ipynb 4
-def to_tf_dataset(dataset) -> tf.data.Dataset:
-    if is_tf_dataset(dataset):
-        return dataset
-    elif is_hf_dataset(dataset):
-        return dataset.to_tf_dataset()
-    elif is_jdl_dataset(dataset):
-        return tf.data.Dataset.from_tensor_slices(dataset[:])
-    else:
-        raise ValueError(f"Dataset type {type(dataset)} is not supported.")
+@dispatch
+def to_tf_dataset(dataset: Dataset) -> tf.data.Dataset:
+    return tf.data.Dataset.from_tensor_slices(dataset[:])
+
+@dispatch
+def to_tf_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
+    return dataset
+
+@dispatch
+def to_tf_dataset(dataset: hf_datasets.Dataset | hf_datasets.DatasetDict) -> tf.data.Dataset:
+    return dataset.to_tf_dataset()
 
 # %% ../../nbs/loader.tf.ipynb 5
 class DataLoaderTensorflow(BaseDataLoader):
