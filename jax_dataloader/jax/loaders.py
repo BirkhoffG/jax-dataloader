@@ -11,22 +11,32 @@ from threading import Thread, Event
 from queue import Queue
 
 # %% auto 0
-__all__ = ['chunk', 'EpochIterator']
-
-# %% ../../nbs/loader.jax.ipynb 4
-def chunk(seq: Sequence, size: int):
-    for pos in range(0, len(seq), size):
-        yield seq[pos:pos + size]
+__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator']
 
 # %% ../../nbs/loader.jax.ipynb 5
-class EpochIterator(Thread):
+def chunk(seq: Sequence, size: int) -> List[Sequence]:
+    return [seq[pos:pos + size] for pos in range(0, len(seq), size)]  
+
+
+# %% ../../nbs/loader.jax.ipynb 6
+def EpochIterator(
+    data,
+    batch_size: int,
+    indices: Sequence[int]
+):
+    for i in range(0, len(indices), batch_size):
+        idx = indices[i:i+batch_size]
+        yield data[idx]
+
+# %% ../../nbs/loader.jax.ipynb 7
+class MultiprocessIterator(Thread):
+    """[WIP] Multiprocessing Epoch Iterator"""
     def __init__(self, data, batch_size: int, indices=None):
         super().__init__()
         self.data = data
         indices = np.arange(len(data)) if indices is None else indices
         batches = chunk(indices, batch_size)
         self.iter_idx = iter(batches)
-        # self.current_slot = 0
         self.output_queue = Queue() # TODO: maxsize
         self.terminate_event = Event()
         self.start()
@@ -36,7 +46,6 @@ class EpochIterator(Thread):
             while True:
                 result = self.get_data()
                 self.output_queue.put(result)
-                # self.current_slot += 1
         except StopIteration:
             self.output_queue.put(None)
 
@@ -60,3 +69,4 @@ class EpochIterator(Thread):
         batch_idx = next(self.iter_idx)
         batch = self.data[batch_idx]
         return batch
+

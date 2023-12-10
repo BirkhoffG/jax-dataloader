@@ -3,6 +3,7 @@
 # %% ../nbs/dataset.ipynb 3
 from __future__ import print_function, division, annotations
 from .imports import *
+from .utils import asnumpy
 
 # %% auto 0
 __all__ = ['Dataset', 'ArrayDataset']
@@ -23,11 +24,18 @@ class ArrayDataset(Dataset):
 
     def __init__(
         self, 
-        *arrays: jax.Array # Numpy array with same first dimension
+        *arrays: jax.Array, # Numpy array with same first dimension
+        asnumpy: bool = True, # Store arrays as numpy arrays if True; otherwise store as array type of *arrays
     ):
         assert all(arrays[0].shape[0] == arr.shape[0] for arr in arrays), \
             "All arrays must have the same dimension."
         self.arrays = tuple(arrays)
+        if asnumpy:
+            self.asnumpy()            
+    
+    def asnumpy(self):
+        """Convert all arrays to numpy arrays."""
+        self.arrays = tuple(asnumpy(arr) for arr in self.arrays)
 
     def __len__(self):
         return self.arrays[0].shape[0]
