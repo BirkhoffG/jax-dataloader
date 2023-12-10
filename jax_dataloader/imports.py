@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from typing import List, Tuple, Dict, Any, Optional, Iterable, Sequence, Iterator
+from typing import List, Tuple, Dict, Any, Optional, Iterable, Sequence, Iterator, Literal, Union
 import jax
 from jax import vmap, grad, jit, numpy as jnp, random as jrand
 from abc import ABC

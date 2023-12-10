@@ -5,13 +5,13 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from ..datasets import ArrayDataset
 from ..loaders import BaseDataLoader
-from ..utils import get_config
+from ..utils import get_config, asnumpy
 from ..tests import *
 from threading import Thread, Event
 from queue import Queue
 
 # %% auto 0
-__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator']
+__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator', 'DataLoaderJAX']
 
 # %% ../../nbs/loader.jax.ipynb 5
 def chunk(seq: Sequence, size: int) -> List[Sequence]:
@@ -31,6 +31,7 @@ def EpochIterator(
 # %% ../../nbs/loader.jax.ipynb 7
 class MultiprocessIterator(Thread):
     """[WIP] Multiprocessing Epoch Iterator"""
+    
     def __init__(self, data, batch_size: int, indices=None):
         super().__init__()
         self.data = data
@@ -70,3 +71,39 @@ class MultiprocessIterator(Thread):
         batch = self.data[batch_idx]
         return batch
 
+
+# %% ../../nbs/loader.jax.ipynb 8
+class DataLoaderJAX(BaseDataLoader):
+    def __init__(
+        self, 
+        dataset, 
+        batch_size: int = 1,  # batch size
+        shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
+        num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.
+        drop_last: bool = False,
+        **kwargs
+    ):
+        self.key = jrand.PRNGKey(get_config().global_seed)
+        self.dataset = dataset
+        if isinstance(dataset, ArrayDataset):
+            self.dataset.asnumpy()
+        
+        self.indices = np.arange(len(dataset))
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.drop_last = drop_last
+    
+    def __iter__(self):
+        if self.shuffle:
+            self.indices = jrand.permutation(self.next_key(), self.indices).__array__()
+        
+        if self.drop_last:
+            self.indices = self.indices[:len(self.indices) - len(self.indices) % self.batch_size]
+        return EpochIterator(self.dataset, self.batch_size, self.indices)
+    
+    def next_key(self):
+        self.key, subkey = jrand.split(self.key)
+        return subkey
+    
+    def __len__(self):
+        return len(self.indices) // self.batch_size
