@@ -4,7 +4,7 @@
 from __future__ import print_function, division, annotations
 from ..imports import *
 from ..datasets import ArrayDataset
-from ..loaders import BaseDataLoader
+from . import BaseDataLoader
 from ..utils import get_config, asnumpy
 from ..tests import *
 from threading import Thread, Event

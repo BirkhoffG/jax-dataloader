@@ -3,7 +3,7 @@
 # %% ../../nbs/loader.torch.ipynb 2
 from __future__ import print_function, division, annotations
 from ..imports import *
-from ..loaders import BaseDataLoader
+from . import BaseDataLoader
 from ..datasets import Dataset, ArrayDataset
 from ..utils import check_pytorch_installed
 from ..tests import *

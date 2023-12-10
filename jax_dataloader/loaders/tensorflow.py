@@ -3,7 +3,7 @@
 # %% ../../nbs/loader.tf.ipynb 2
 from __future__ import print_function, division, annotations
 from ..imports import *
-from ..loaders import BaseDataLoader
+from . import BaseDataLoader
 from ..datasets import Dataset, ArrayDataset
 from ..utils import is_tf_dataset, is_hf_dataset, is_jdl_dataset, check_tf_installed, get_config
 from ..tests import *
