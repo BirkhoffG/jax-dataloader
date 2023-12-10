@@ -4,6 +4,7 @@
 from __future__ import print_function, division, annotations
 from .imports import *
 import jax_dataloader as jdl
+import collections
 
 # %% auto 0
 __all__ = ['Config', 'get_config', 'PRNGSequence', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
@@ -28,7 +29,7 @@ def get_config() -> Config:
     return main_config
 
 # %% ../nbs/utils.ipynb 8
-class PRNGSequence(Iterator[PRNGKey]):
+class PRNGSequence(Iterator[jrand.PRNGKey]):
     """An Interator of Jax PRNGKey (minimal version of `haiku.PRNGSequence`)."""
 
     def __init__(self, seed: int):
