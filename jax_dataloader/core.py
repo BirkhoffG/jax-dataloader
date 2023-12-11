@@ -8,9 +8,15 @@ from .datasets import *
 from .loaders import *
 
 # %% auto 0
-__all__ = ['DataloaderBackends', 'DataLoader']
+__all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'DataLoader']
 
 # %% ../nbs/core.ipynb 4
+SUPPORTED_DATASETS = [
+    Dataset, torch_data.Dataset, tfds.data.Dataset, 
+    hf_datasets.Dataset, hf_datasets.DatasetDict
+]
+
+# %% ../nbs/core.ipynb 5
 @dataclass(frozen=True)
 class DataloaderBackends:
     jax = DataLoaderJAX
@@ -31,7 +37,7 @@ class DataloaderBackends:
             backend for backend, dl_cls in self.__all__.items() if dl_cls is not None
         ]
 
-# %% ../nbs/core.ipynb 5
+# %% ../nbs/core.ipynb 6
 def _get_backends() -> List[str]:
     """Return list of supported dataloader backends"""
     return DataloaderBackends().__all__.keys()
@@ -49,7 +55,7 @@ def _dispatch_dataloader(
     dl_cls = backends[backend]
     return dl_cls
 
-# %% ../nbs/core.ipynb 6
+# %% ../nbs/core.ipynb 7
 def _dispatch_dataset(
     dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
 ) -> Dataset:
@@ -66,7 +72,7 @@ def _dispatch_dataset(
                          "`torch.utils.data.Dataset`, `datasets.Dataset`, "
                          f"but got {type(dataset)}")
 
-# %% ../nbs/core.ipynb 7
+# %% ../nbs/core.ipynb 8
 def _check_backend_compatibility(dataset, backend: str):
     compatible_set = {
         "jax": [is_jdl_dataset, is_hf_dataset],
@@ -88,7 +94,7 @@ def _check_backend_compatibility(dataset, backend: str):
     #                      "which is only supported by 'pytorch' backend."
     #                      f"However, we got `backend={backend}`, which is not 'pytorch'.")
 
-# %% ../nbs/core.ipynb 8
+# %% ../nbs/core.ipynb 9
 def _dispatch_dataset_and_backend(
     dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
     backend: str # dataloader backend
@@ -101,7 +107,7 @@ def _dispatch_dataset_and_backend(
     return dataset, dl_cls
 
 
-# %% ../nbs/core.ipynb 9
+# %% ../nbs/core.ipynb 10
 class DataLoader:
     """Main Dataloader class to load Numpy data batches"""
 
