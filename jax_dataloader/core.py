@@ -56,10 +56,6 @@ def _dispatch_dataset(
     if isinstance(dataset, Dataset):
         return dataset
     elif is_torch_dataset(dataset):
-        # Give a warning if the dataset is not in numpy format
-        if has_pytorch_tensor(dataset[0]):
-            warnings.warn("The dataset contains `torch.Tensor`. "
-                "Please make sure the dataset is in numpy format.")
         return dataset
     elif is_hf_dataset(dataset):
         return dataset.with_format("jax")
@@ -99,11 +95,7 @@ def _dispatch_dataset_and_backend(
 ) -> Tuple[Dataset, BaseDataLoader]:
     """Return Dataset and Dataloader class based on given `dataset` and `backend`"""
 
-    # if backend != "pytorch" and isinstance(dataset, torch_data.Dataset):
-    #     raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
-    #                      "which is only supported by 'pytorch' backend."
-    #                      f"However, we got `backend={backend}`, which is not 'pytorch'.")
-    _check_backend_compatibility(dataset, backend)
+    # _check_backend_compatibility(dataset, backend)
     dataset = _dispatch_dataset(dataset)    
     dl_cls = _dispatch_dataloader(backend)
     return dataset, dl_cls
