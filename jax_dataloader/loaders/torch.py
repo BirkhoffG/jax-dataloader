@@ -30,7 +30,7 @@ def to_torch_dataset(dataset: Dataset) -> torch_data.Dataset:
 
 # %% ../../nbs/loader.torch.ipynb 7
 @dispatch
-def to_torch_dataset(dataset: Union[torch_data.Dataset, hf_datasets.Dataset]):
+def to_torch_dataset(dataset: torch_data.Dataset | hf_datasets.Dataset):
     return dataset
 
 # %% ../../nbs/loader.torch.ipynb 8
@@ -39,7 +39,7 @@ class DataLoaderPytorch(BaseDataLoader):
     
     def __init__(
         self, 
-        dataset: Union[ArrayDataset, torch_data.Dataset, hf_datasets.Dataset],
+        dataset: ArrayDataset | torch_data.Dataset | hf_datasets.Dataset,
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
