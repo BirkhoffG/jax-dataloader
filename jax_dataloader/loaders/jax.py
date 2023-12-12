@@ -79,7 +79,7 @@ class DataLoaderJAX(BaseDataLoader):
     @typecheck
     def __init__(
         self, 
-        dataset: jdl.datasets.Dataset | hf_datasets.Dataset, 
+        dataset: Union[jdl.datasets.Dataset, hf_datasets.Dataset], 
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.

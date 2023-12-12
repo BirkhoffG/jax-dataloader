@@ -71,7 +71,6 @@ jobs:
       - name: Install Library
         run: |
           pip install --upgrade pip
-          pip install tensorflow-cpu
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -e .[dev]
 
