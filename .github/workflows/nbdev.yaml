@@ -71,6 +71,7 @@ jobs:
       - name: Install Library
         run: |
           pip install --upgrade pip
+          pip install tensorflow-cpu
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -e .[dev]
 
@@ -78,7 +79,7 @@ jobs:
         run: nbdev_test
 
       - name: test docs build
-        if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.8' && matrix.os == 'ubuntu' }}
+        if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.9' && matrix.os == 'ubuntu' }}
         run: |
           set -ux
           wget -q $(curl https://latest.fast.ai/pre/quarto-dev/quarto-cli/linux-amd64.deb)
