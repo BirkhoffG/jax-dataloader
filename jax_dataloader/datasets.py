@@ -6,7 +6,7 @@ from .imports import *
 from .utils import asnumpy
 
 # %% auto 0
-__all__ = ['Dataset', 'ArrayDataset']
+__all__ = ['JAXDataset', 'Dataset', 'ArrayDataset']
 
 # %% ../nbs/dataset.ipynb 4
 class Dataset:
@@ -42,3 +42,6 @@ class ArrayDataset(Dataset):
 
     def __getitem__(self, index):
         return jax.tree_util.tree_map(lambda x: x[index], self.arrays)
+
+# %% ../nbs/dataset.ipynb 14
+JAXDataset = Dataset
