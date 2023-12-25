@@ -76,7 +76,7 @@ class MultiprocessIterator(Thread):
 # %% ../../nbs/loader.jax.ipynb 7
 class DataLoaderJAX(BaseDataLoader):
 
-    @typecheck
+    # @typecheck
     def __init__(
         self, 
         dataset: Union[jdl.datasets.Dataset, hf_datasets.Dataset], 

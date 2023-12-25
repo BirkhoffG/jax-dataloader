@@ -12,8 +12,10 @@ __all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'DataLoader']
 
 # %% ../nbs/core.ipynb 4
 SUPPORTED_DATASETS = [
-    Dataset, torch_data.Dataset, tf.data.Dataset, 
-    hf_datasets.Dataset, hf_datasets.DatasetDict
+    JAXDataset,
+    TorchDataset,
+    TFDataset,
+    HFDataset
 ]
 
 # %% ../nbs/core.ipynb 5
