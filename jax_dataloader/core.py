@@ -8,7 +8,7 @@ from .datasets import *
 from .loaders import *
 
 # %% auto 0
-__all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'DataLoader']
+__all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'get_backend_compatibilities', 'DataLoader']
 
 # %% ../nbs/core.ipynb 4
 SUPPORTED_DATASETS = [
@@ -56,6 +56,30 @@ def _dispatch_dataloader(
     
     dl_cls = backends[backend]
     return dl_cls
+
+# %% ../nbs/core.ipynb 7
+def _check_backend_compatibility(ds, backend: str):
+    return DataLoader(ds, backend=backend)
+
+# %% ../nbs/core.ipynb 8
+def get_backend_compatibilities():
+
+    ds = {
+        'JAX': ArrayDataset(np.array([1,2,3])),
+        'Pytorch': torch_data.Dataset(),
+        'Tensorflow': tf.data.Dataset.from_tensor_slices(np.array([1,2,3])),
+        'Huggingface': hf_datasets.Dataset.from_dict({'a': [1,2,3]})
+    }
+    backends = {b: [] for b in _get_backends()}
+    for b in _get_backends():
+        for name, dataset in ds.items():
+            try:
+                _check_backend_compatibility(dataset, b)
+                backends[b].append(name)
+            except:
+                pass
+
+    return backends
 
 # %% ../nbs/core.ipynb 9
 class DataLoader:
