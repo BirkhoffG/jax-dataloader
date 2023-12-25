@@ -57,59 +57,7 @@ def _dispatch_dataloader(
     dl_cls = backends[backend]
     return dl_cls
 
-# %% ../nbs/core.ipynb 7
-def _dispatch_dataset(
-    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-) -> Dataset:
-    if isinstance(dataset, Dataset):
-        return dataset
-    elif is_torch_dataset(dataset):
-        return dataset
-    elif is_hf_dataset(dataset):
-        return dataset.with_format("jax")
-    elif is_tf_dataset(dataset):
-        return dataset
-    else:
-        raise ValueError(f"dataset must be one of `jax_loader.Dataset`, "
-                         "`torch.utils.data.Dataset`, `datasets.Dataset`, "
-                         f"but got {type(dataset)}")
-
-# %% ../nbs/core.ipynb 8
-def _check_backend_compatibility(dataset, backend: str):
-    compatible_set = {
-        "jax": [is_jdl_dataset, is_hf_dataset],
-        "pytorch": [is_jdl_dataset, is_torch_dataset, is_hf_dataset],
-        "tensorflow": [is_jdl_dataset, is_hf_dataset, is_tf_dataset],
-        "merlin": [],
-    }
-    assert all([backend in compatible_set for backend in _get_backends()])
-
-    if not backend in _get_backends():
-        raise ValueError(f"backend=`{backend}` is not supported yet. "
-            f"Should be one of {_get_backends()}.")
-    
-    if not any([check_dataset_fn(dataset) for check_dataset_fn in compatible_set[backend]]):
-        raise ValueError(f"dataset (type=`{type(dataset)}`) is not compatible with backend='{backend}'. ")
-    
-    # if backend != "pytorch" and is_torch_dataset(dataset):
-    #     raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
-    #                      "which is only supported by 'pytorch' backend."
-    #                      f"However, we got `backend={backend}`, which is not 'pytorch'.")
-
 # %% ../nbs/core.ipynb 9
-def _dispatch_dataset_and_backend(
-    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-    backend: str # dataloader backend
-) -> Tuple[Dataset, BaseDataLoader]:
-    """Return Dataset and Dataloader class based on given `dataset` and `backend`"""
-
-    # _check_backend_compatibility(dataset, backend)
-    dataset = _dispatch_dataset(dataset)    
-    dl_cls = _dispatch_dataloader(backend)
-    return dataset, dl_cls
-
-
-# %% ../nbs/core.ipynb 10
 class DataLoader:
     """Main Dataloader class to load Numpy data batches"""
 
@@ -122,7 +70,7 @@ class DataLoader:
         drop_last: bool = False, # drop last batches or not
         **kwargs
     ):
-        dataset, dl_cls = _dispatch_dataset_and_backend(dataset, backend)
+        dl_cls = _dispatch_dataloader(backend)
         self.dataloader = dl_cls(
             dataset=dataset, 
             batch_size=batch_size, 
@@ -138,4 +86,4 @@ class DataLoader:
         return next(self.dataloader)
 
     def __iter__(self):
-        return self.dataloader.__iter__()
+        return iter(self.dataloader)
