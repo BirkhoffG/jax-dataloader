@@ -20,7 +20,7 @@ def _numpy_collate(batch):
 
 # %% ../../nbs/loader.torch.ipynb 6
 @dispatch
-def to_torch_dataset(dataset: Dataset) -> torch_data.Dataset:
+def to_torch_dataset(dataset: JAXDataset) -> torch_data.Dataset:
     class DatasetPytorch(torch_data.Dataset):
         def __init__(self, dataset: Dataset): self.dataset = dataset
         def __len__(self): return len(self.dataset)
@@ -34,7 +34,7 @@ def to_torch_dataset(dataset: TorchDataset):
 
 @dispatch
 def to_torch_dataset(dataset: HFDataset):
-    return dataset
+    return dataset.with_format("jax")
 
 # %% ../../nbs/loader.torch.ipynb 7
 class DataLoaderPytorch(BaseDataLoader):
