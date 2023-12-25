@@ -76,10 +76,10 @@ class MultiprocessIterator(Thread):
 # %% ../../nbs/loader.jax.ipynb 7
 class DataLoaderJAX(BaseDataLoader):
 
-    # @typecheck
+    @typecheck
     def __init__(
         self, 
-        dataset: Union[jdl.datasets.Dataset, hf_datasets.Dataset], 
+        dataset: Union[JAXDataset, HFDataset], 
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.

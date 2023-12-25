@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from plum import dispatch
 from beartype.vale import Is
 from beartype.door import is_bearable
+from beartype import beartype as typecheck
 
 try:
     import torch.utils.data as torch_data

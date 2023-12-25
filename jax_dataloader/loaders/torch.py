@@ -4,7 +4,7 @@
 from __future__ import print_function, division, annotations
 from ..imports import *
 from . import BaseDataLoader
-from ..datasets import Dataset, ArrayDataset
+from ..datasets import Dataset, ArrayDataset, JAXDataset
 from ..utils import check_pytorch_installed
 from ..tests import *
 from jax.tree_util import tree_map
@@ -29,20 +29,21 @@ def to_torch_dataset(dataset: Dataset) -> torch_data.Dataset:
     return DatasetPytorch(dataset)
 
 @dispatch
-def to_torch_dataset(dataset: torch_data.Dataset):
+def to_torch_dataset(dataset: TorchDataset):
     return dataset
 
 @dispatch
-def to_torch_dataset(dataset: hf_datasets.Dataset):
+def to_torch_dataset(dataset: HFDataset):
     return dataset
 
 # %% ../../nbs/loader.torch.ipynb 7
 class DataLoaderPytorch(BaseDataLoader):
     """Pytorch Dataloader"""
     
+    @typecheck
     def __init__(
         self, 
-        dataset: ArrayDataset | torch_data.Dataset | hf_datasets.Dataset,
+        dataset: Union[JAXDataset, TorchDataset, HFDataset],
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not

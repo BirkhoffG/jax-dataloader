@@ -4,7 +4,7 @@
 from __future__ import print_function, division, annotations
 from ..imports import *
 from . import BaseDataLoader
-from ..datasets import Dataset, ArrayDataset
+from ..datasets import Dataset, ArrayDataset, JAXDataset
 from ..utils import is_tf_dataset, is_hf_dataset, is_jdl_dataset, check_tf_installed, get_config
 from ..tests import *
 from jax.tree_util import tree_map
@@ -14,23 +14,25 @@ __all__ = ['to_tf_dataset', 'DataLoaderTensorflow']
 
 # %% ../../nbs/loader.tf.ipynb 4
 @dispatch
-def to_tf_dataset(dataset: Dataset) -> tf.data.Dataset:
+def to_tf_dataset(dataset: JAXDataset) -> tf.data.Dataset:
     return tf.data.Dataset.from_tensor_slices(dataset[:])
 
 @dispatch
-def to_tf_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
+def to_tf_dataset(dataset: TFDataset) -> tf.data.Dataset:
     return dataset
 
 @dispatch
-def to_tf_dataset(dataset: hf_datasets.Dataset | hf_datasets.DatasetDict) -> tf.data.Dataset:
+def to_tf_dataset(dataset: HFDataset) -> tf.data.Dataset:
     return dataset.to_tf_dataset()
 
 # %% ../../nbs/loader.tf.ipynb 5
 class DataLoaderTensorflow(BaseDataLoader):
     """Tensorflow Dataloader"""
+    
+    @typecheck
     def __init__(
         self, 
-        dataset,
+        dataset: Union[JAXDataset, TFDataset, HFDataset],
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
