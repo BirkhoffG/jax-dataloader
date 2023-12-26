@@ -82,9 +82,9 @@ compatibility table below:
 
 |                | `jdl.Dataset` | `torch_data.Dataset` | `tf.data.Dataset` | `datasets.Dataset` |
 |:---------------|:--------------|:---------------------|:------------------|:-------------------|
-| `"jax"`        | ❌            | ❌                   | ❌                | ✅                 |
-| `"pytorch"`    | ❌            | ✅                   | ❌                | ✅                 |
-| `"tensorflow"` | ❌            | ❌                   | ✅                | ✅                 |
+| `"jax"`        | ✅            | ❌                   | ❌                | ✅                 |
+| `"pytorch"`    | ✅            | ✅                   | ❌                | ✅                 |
+| `"tensorflow"` | ✅            | ❌                   | ✅                | ✅                 |
 
 ### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/dataset.html#arraydataset)
 
