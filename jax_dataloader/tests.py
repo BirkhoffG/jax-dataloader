@@ -8,6 +8,13 @@ from .datasets import ArrayDataset
 # %% auto 0
 __all__ = ['test_dataloader']
 
+# %% ../nbs/tests.ipynb 3
+def get_batch(batch):
+    if isinstance(batch, dict):
+        return batch['feats'], batch['labels']
+    else:
+        return batch
+
 # %% ../nbs/tests.ipynb 4
 def test_no_shuffle(cls, ds, batch_size: int, feats, labels):
     dl = cls(ds, batch_size=batch_size, shuffle=False)
