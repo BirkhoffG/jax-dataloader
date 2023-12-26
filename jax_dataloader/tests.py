@@ -8,26 +8,26 @@ from .datasets import ArrayDataset
 # %% auto 0
 __all__ = ['test_dataloader']
 
-# %% ../nbs/tests.ipynb 3
-def test_dataloader(dataloader_cls, samples=1000, batch_size=12):
-    feats = jnp.arange(samples).repeat(10).reshape(samples, 10)
-    labels = jnp.arange(samples).reshape(samples, 1)
-    ds = ArrayDataset(feats, labels)
-    # N % batchsize != 0
-    dl = dataloader_cls(ds, batch_size=batch_size, shuffle=False)
+# %% ../nbs/tests.ipynb 4
+def test_no_shuffle(cls, ds, batch_size: int, feats, labels):
+    dl = cls(ds, batch_size=batch_size, shuffle=False)
     for _ in range(2):
         X_list, Y_list = [], []
-        for x, y in dl:
+        for batch in dl:
+            x, y = get_batch(batch)
             X_list.append(x)
             Y_list.append(y)
         _X, _Y = map(jnp.concatenate, (X_list, Y_list))
         assert jnp.array_equal(_X, feats)
         assert jnp.array_equal(_Y, labels)
 
-    dl = dataloader_cls(ds, batch_size=batch_size, shuffle=False, drop_last=True)
+# %% ../nbs/tests.ipynb 5
+def test_no_shuffle_drop_last(cls, ds, batch_size: int, feats, labels):
+    dl = cls(ds, batch_size=batch_size, shuffle=False, drop_last=True)
     for _ in range(2):
         X_list, Y_list = [], []
-        for x, y in dl:
+        for batch in dl:
+            x, y = get_batch(batch)
             X_list.append(x)
             Y_list.append(y)
         _X, _Y = map(jnp.concatenate, (X_list, Y_list))
@@ -35,12 +35,14 @@ def test_dataloader(dataloader_cls, samples=1000, batch_size=12):
         assert jnp.array_equal(_X, feats[: last_idx])
         assert jnp.array_equal(_Y, labels[: last_idx])
 
-
-    dl_shuffle = dataloader_cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
+# %% ../nbs/tests.ipynb 6
+def test_shuffle(cls, ds, batch_size: int, feats, labels):
+    dl = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
     last_X, last_Y = jnp.array([]), jnp.array([])
     for _ in range(2):
         X_list, Y_list = [], []
-        for x, y in dl_shuffle:
+        for batch in dl:
+            x, y = get_batch(batch)
             assert jnp.array_equal(x[:, :1], y)
             X_list.append(x)
             Y_list.append(y)
@@ -53,11 +55,13 @@ def test_dataloader(dataloader_cls, samples=1000, batch_size=12):
         assert not jnp.array_equal(_Y, last_Y)
         last_X, last_Y = _X, _Y
 
-
-    dl_shuffle = dataloader_cls(ds, batch_size=batch_size, shuffle=True, drop_last=True)
+# %% ../nbs/tests.ipynb 7
+def test_shuffle_drop_last(cls, ds, batch_size: int, feats, labels):
+    dl = cls(ds, batch_size=batch_size, shuffle=True, drop_last=True)
     for _ in range(2):
         X_list, Y_list = [], []
-        for x, y in dl_shuffle:
+        for batch in dl:
+            x, y = get_batch(batch)
             assert jnp.array_equal(x[:, :1], y)
             X_list.append(x)
             Y_list.append(y)
@@ -65,3 +69,25 @@ def test_dataloader(dataloader_cls, samples=1000, batch_size=12):
         assert not jnp.array_equal(_X, feats)
         assert not jnp.array_equal(_Y, labels)
         assert len(_X) == len(X_list) * batch_size
+
+# %% ../nbs/tests.ipynb 8
+def test_dataloader(cls, ds_type='jax', samples=1000, batch_size=12):
+    feats = np.arange(samples).repeat(10).reshape(samples, 10)
+    labels = np.arange(samples).reshape(samples, 1)
+
+    if ds_type == 'jax':
+        ds = ArrayDataset(feats, labels)
+    elif ds_type == 'torch':
+        ds = torch.utils.data.TensorDataset(
+            torch.from_numpy(feats), torch.from_numpy(labels))
+    elif ds_type == 'tf':
+        ds = tf.data.Dataset.from_tensor_slices((feats, labels))
+    elif ds_type == "hf":
+        ds = hf_datasets.Dataset.from_dict({"feats": feats, "labels": labels})
+    else:
+        raise ValueError(f"Unknown ds_type: {ds_type}")
+    
+    test_no_shuffle(cls, ds, batch_size, feats, labels)
+    test_no_shuffle_drop_last(cls, ds, batch_size, feats, labels)
+    test_shuffle(cls, ds, batch_size, feats, labels)
+    test_shuffle_drop_last(cls, ds, batch_size, feats, labels)
