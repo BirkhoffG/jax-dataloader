@@ -6,5 +6,10 @@ website:
         contents:
         - core.ipynb
         - dataset.ipynb
-        - loader.ipynb
+        - section: Loaders
+          contents:
+          - loader.base.ipynb
+          - loader.jax.ipynb
+          - loader.torch.ipynb
+          - loader.tf.ipynb
         - utils.ipynb
