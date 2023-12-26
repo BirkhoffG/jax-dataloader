@@ -3,10 +3,10 @@
 # %% ../nbs/dataset.ipynb 3
 from __future__ import print_function, division, annotations
 from .imports import *
-from .utils import *
+from .utils import asnumpy
 
 # %% auto 0
-__all__ = ['Dataset', 'ArrayDataset']
+__all__ = ['JAXDataset', 'Dataset', 'ArrayDataset']
 
 # %% ../nbs/dataset.ipynb 4
 class Dataset:
@@ -17,9 +17,6 @@ class Dataset:
 
     def __getitem__(self, index):
         raise NotImplementedError
-    
-    def to_tf_dataset(self):
-        raise NotImplementedError
 
 # %% ../nbs/dataset.ipynb 5
 class ArrayDataset(Dataset):
@@ -27,71 +24,24 @@ class ArrayDataset(Dataset):
 
     def __init__(
         self, 
-        *arrays: jnp.DeviceArray # Numpy array with same first dimension
+        *arrays: jax.Array, # Numpy array with same first dimension
+        asnumpy: bool = True, # Store arrays as numpy arrays if True; otherwise store as array type of *arrays
     ):
         assert all(arrays[0].shape[0] == arr.shape[0] for arr in arrays), \
             "All arrays must have the same dimension."
         self.arrays = tuple(arrays)
+        if asnumpy:
+            self.asnumpy()            
+    
+    def asnumpy(self):
+        """Convert all arrays to numpy arrays."""
+        self.arrays = tuple(asnumpy(arr) for arr in self.arrays)
 
     def __len__(self):
         return self.arrays[0].shape[0]
 
     def __getitem__(self, index):
         return jax.tree_util.tree_map(lambda x: x[index], self.arrays)
-    
-    def to_tf_dataset(self):
-        return tf.data.Dataset.from_tensor_slices(self.arrays)
 
-# %% ../nbs/dataset.ipynb 10
-def _has_tensor(batch) -> bool:
-    if isinstance(batch[0], torch.Tensor):
-        return True
-    elif isinstance(batch[0], (tuple, list)):
-        transposed = zip(*batch)
-        return any([_has_tensor(samples) for samples in transposed])
-    else:
-        return False
-
-# %% ../nbs/dataset.ipynb 11
-class TorchDataset(Dataset):
-    """[Deprecated] A Dataset class that wraps a pytorch Dataset."""
-    
-    def __init__(
-        self, 
-        dataset: torch_data.Dataset # Pytorch Dataset
-    ):
-        check_pytorch_installed()
-        if not isinstance(dataset, torch_data.Dataset):
-            raise TypeError(f"`dataset` must be a torch Dataset, but got {type(dataset)}")
-        # Give a warning if the dataset is not in numpy format
-        if _has_tensor(dataset[0]):
-            warnings.warn("The dataset contains `torch.Tensor`. "
-                "Please make sure the dataset is in numpy format.")
-        self._ds = dataset
-
-    def __len__(self):
-        return len(self._ds)
-
-    def __getitem__(self, index):
-        return self._ds[index]
-
-# %% ../nbs/dataset.ipynb 21
-class HFDataset(Dataset):
-    """[Deprecated] A Dataset class that wraps a huggingface Dataset."""
-    
-    def __init__(
-        self, 
-        dataset: hf_datasets.Dataset # Huggingface Dataset
-    ):
-        check_hf_installed()
-        # if not isinstance(dataset, hf_datasets.Dataset):
-        #     raise TypeError(f"`dataset` must be a huggingface Dataset, "
-        #                     f"but got {type(dataset)}")
-        # Ensure the dataset is in jax format
-        self._ds = dataset.with_format("jax")
-
-    def __len__(self):
-        return len(self._ds)
-
-    def __getitem__(self, index):
-        return self._ds[index]
+# %% ../nbs/dataset.ipynb 14
+JAXDataset = Dataset

@@ -4,12 +4,13 @@
 from __future__ import print_function, division, annotations
 from .imports import *
 import jax_dataloader as jdl
+import collections
 
 # %% auto 0
-__all__ = ['Config', 'get_config', 'PRNGSequence', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
-           'check_tf_installed', 'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset']
+__all__ = ['Config', 'get_config', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed', 'check_tf_installed',
+           'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset', 'asnumpy']
 
-# %% ../nbs/utils.ipynb 5
+# %% ../nbs/utils.ipynb 6
 @dataclass
 class Config:
     """Global configuration for the library"""
@@ -20,32 +21,12 @@ class Config:
     def default(cls) -> Config:
         return cls(rng_reserve_size=1, global_seed=42)
 
-# %% ../nbs/utils.ipynb 6
+# %% ../nbs/utils.ipynb 7
 main_config = Config.default()
 
-# %% ../nbs/utils.ipynb 7
+# %% ../nbs/utils.ipynb 8
 def get_config() -> Config:
     return main_config
-
-# %% ../nbs/utils.ipynb 8
-class PRNGSequence(Iterator[PRNGKey]):
-    """An Interator of Jax PRNGKey (minimal version of `haiku.PRNGSequence`)."""
-
-    def __init__(self, seed: int):
-        self._key = jax.random.PRNGKey(seed)
-        self._subkeys = collections.deque()
-
-    def reserve(self, num):
-        """Splits additional ``num`` keys for later use."""
-        if num > 0:
-            new_keys = tuple(jax.random.split(self._key, num + 1))
-            self._key = new_keys[0]
-            self._subkeys.extend(new_keys[1:])
-            
-    def __next__(self):
-        if not self._subkeys:
-            self.reserve(get_config().rng_reserve_size)
-        return self._subkeys.popleft()
 
 # %% ../nbs/utils.ipynb 10
 def check_pytorch_installed():
@@ -98,3 +79,18 @@ def is_jdl_dataset(dataset):
 # %% ../nbs/utils.ipynb 20
 def is_tf_dataset(dataset):
     return tf and isinstance(dataset, tf.data.Dataset)
+
+# %% ../nbs/utils.ipynb 22
+def asnumpy(x) -> np.ndarray:
+    if isinstance(x, np.ndarray):
+        return x
+    elif isinstance(x, jnp.ndarray):
+        return x.__array__()
+    elif torch_data and isinstance(x, torch.Tensor):
+        return x.detach().cpu().numpy()
+    elif tf and isinstance(x, tf.Tensor):
+        return x.numpy()
+    elif isinstance(x, (tuple, list)):
+        return map(asnumpy, x)
+    else:
+        raise ValueError(f"Unknown type: {type(x)}")

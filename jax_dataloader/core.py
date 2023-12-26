@@ -8,12 +8,20 @@ from .datasets import *
 from .loaders import *
 
 # %% auto 0
-__all__ = ['DataloaderBackends', 'DataLoader']
+__all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'get_backend_compatibilities', 'DataLoader']
 
 # %% ../nbs/core.ipynb 4
+SUPPORTED_DATASETS = [
+    JAXDataset,
+    TorchDataset,
+    TFDataset,
+    HFDataset
+]
+
+# %% ../nbs/core.ipynb 5
 @dataclass(frozen=True)
 class DataloaderBackends:
-    jax = DataLoaderJax
+    jax = DataLoaderJAX
     pytorch: BaseDataLoader = DataLoaderPytorch
     tensorflow: BaseDataLoader = DataLoaderTensorflow
     merlin: BaseDataLoader = None
@@ -31,7 +39,7 @@ class DataloaderBackends:
             backend for backend, dl_cls in self.__all__.items() if dl_cls is not None
         ]
 
-# %% ../nbs/core.ipynb 5
+# %% ../nbs/core.ipynb 6
 def _get_backends() -> List[str]:
     """Return list of supported dataloader backends"""
     return DataloaderBackends().__all__.keys()
@@ -49,65 +57,29 @@ def _dispatch_dataloader(
     dl_cls = backends[backend]
     return dl_cls
 
-# %% ../nbs/core.ipynb 6
-def _dispatch_dataset(
-    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-) -> Dataset:
-    if isinstance(dataset, Dataset):
-        return dataset
-    elif is_torch_dataset(dataset):
-        # Give a warning if the dataset is not in numpy format
-        if has_pytorch_tensor(dataset[0]):
-            warnings.warn("The dataset contains `torch.Tensor`. "
-                "Please make sure the dataset is in numpy format.")
-        return dataset
-    elif is_hf_dataset(dataset):
-        return dataset.with_format("jax")
-    elif is_tf_dataset(dataset):
-        return dataset
-    else:
-        raise ValueError(f"dataset must be one of `jax_loader.Dataset`, "
-                         "`torch.utils.data.Dataset`, `datasets.Dataset`, "
-                         f"but got {type(dataset)}")
-
 # %% ../nbs/core.ipynb 7
-def _check_backend_compatibility(dataset, backend: str):
-    compatible_set = {
-        "jax": [is_jdl_dataset, is_hf_dataset],
-        "pytorch": [is_jdl_dataset, is_torch_dataset, is_hf_dataset],
-        "tensorflow": [is_jdl_dataset, is_hf_dataset, is_tf_dataset],
-        "merlin": [],
-    }
-    assert all([backend in compatible_set for backend in _get_backends()])
-
-    if not backend in _get_backends():
-        raise ValueError(f"backend=`{backend}` is not supported yet. "
-            f"Should be one of {_get_backends()}.")
-    
-    if not any([check_dataset_fn(dataset) for check_dataset_fn in compatible_set[backend]]):
-        raise ValueError(f"dataset (type=`{type(dataset)}`) is not compatible with backend='{backend}'. ")
-    
-    # if backend != "pytorch" and is_torch_dataset(dataset):
-    #     raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
-    #                      "which is only supported by 'pytorch' backend."
-    #                      f"However, we got `backend={backend}`, which is not 'pytorch'.")
+def _check_backend_compatibility(ds, backend: str):
+    return DataLoader(ds, backend=backend)
 
 # %% ../nbs/core.ipynb 8
-def _dispatch_dataset_and_backend(
-    dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-    backend: str # dataloader backend
-) -> Tuple[Dataset, BaseDataLoader]:
-    """Return Dataset and Dataloader class based on given `dataset` and `backend`"""
+def get_backend_compatibilities():
 
-    # if backend != "pytorch" and isinstance(dataset, torch_data.Dataset):
-    #     raise ValueError(f"dataset (type={type(dataset)}) is a pytorch dataset, "
-    #                      "which is only supported by 'pytorch' backend."
-    #                      f"However, we got `backend={backend}`, which is not 'pytorch'.")
-    _check_backend_compatibility(dataset, backend)
-    dataset = _dispatch_dataset(dataset)    
-    dl_cls = _dispatch_dataloader(backend)
-    return dataset, dl_cls
+    ds = {
+        'JAX': ArrayDataset(np.array([1,2,3])),
+        'Pytorch': torch_data.Dataset(),
+        'Tensorflow': tf.data.Dataset.from_tensor_slices(np.array([1,2,3])),
+        'Huggingface': hf_datasets.Dataset.from_dict({'a': [1,2,3]})
+    }
+    backends = {b: [] for b in _get_backends()}
+    for b in _get_backends():
+        for name, dataset in ds.items():
+            try:
+                _check_backend_compatibility(dataset, b)
+                backends[b].append(name)
+            except:
+                pass
 
+    return backends
 
 # %% ../nbs/core.ipynb 9
 class DataLoader:
@@ -122,7 +94,7 @@ class DataLoader:
         drop_last: bool = False, # drop last batches or not
         **kwargs
     ):
-        dataset, dl_cls = _dispatch_dataset_and_backend(dataset, backend)
+        dl_cls = _dispatch_dataloader(backend)
         self.dataloader = dl_cls(
             dataset=dataset, 
             batch_size=batch_size, 
@@ -138,4 +110,4 @@ class DataLoader:
         return next(self.dataloader)
 
     def __iter__(self):
-        return self.dataloader.__iter__()
+        return iter(self.dataloader)
