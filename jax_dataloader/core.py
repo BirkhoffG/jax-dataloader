@@ -62,14 +62,15 @@ def _check_backend_compatibility(ds, backend: str):
     return DataLoader(ds, backend=backend)
 
 # %% ../nbs/core.ipynb 8
-def get_backend_compatibilities():
+def get_backend_compatibilities() -> dict[str, list[type]]:
 
     ds = {
-        'JAX': ArrayDataset(np.array([1,2,3])),
-        'Pytorch': torch_data.Dataset(),
-        'Tensorflow': tf.data.Dataset.from_tensor_slices(np.array([1,2,3])),
-        'Huggingface': hf_datasets.Dataset.from_dict({'a': [1,2,3]})
+        JAXDataset: ArrayDataset(np.array([1,2,3])),
+        TorchDataset: torch_data.Dataset(),
+        TFDataset: tf.data.Dataset.from_tensor_slices(np.array([1,2,3])),
+        HFDataset: hf_datasets.Dataset.from_dict({'a': [1,2,3]})
     }
+    assert len(ds) == len(SUPPORTED_DATASETS)
     backends = {b: [] for b in _get_backends()}
     for b in _get_backends():
         for name, dataset in ds.items():

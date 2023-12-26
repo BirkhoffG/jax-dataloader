@@ -17,13 +17,13 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 - **downloading and pre-processing datasets** via [huggingface
   datasets](https://github.com/huggingface/datasets), [pytorch
   Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset),
-  and tensorflow dataset (forthcoming)
+  and [tensorflow dataset](www.tensorflow.org/datasets);
 
 - **iteratively loading batches** via (vanillla) [jax
   dataloader](https://birkhoffg.github.io/jax-dataloader/core.html#jax-dataloader),
   [pytorch
-  dataloader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader),
-  tensorflow (forthcoming), and merlin (forthcoming).
+  dataloader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+  and [tensorflow dataset](www.tensorflow.org/datasets).
 
 A minimum `jax-dataloader` example:
 
@@ -57,9 +57,11 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 > **Note**
 >
 > We will only install `jax`-related dependencies. If you wish to use
-> integration of `pytorch` or huggingface `datasets`, you should try to
-> manually install them, or run `pip install jax-dataloader[all]` for
-> installing all the dependencies.
+> integration of `pytorch`, huggingface `datasets`, or `tensorflow`, we
+> recommend manually install those dependencies.
+>
+> You can also run `pip install jax-dataloader[all]` to install
+> everything (not recommended).
 
 </div>
 
@@ -68,16 +70,36 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 [`jax_dataloader.core.DataLoader`](https://birkhoffg.github.io/jax-dataloader/core.html#dataloader)
 follows similar API as the pytorch dataloader.
 
-- The `dataset` argument takes `jax_dataloader.core.Dataset` or
-  `torch.utils.data.Dataset` or (the huggingface) `datasets.Dataset` as
-  an input from which to load the data.
-- The `backend` argument takes `"jax"` or`"pytorch"` as an input, which
-  specifies which backend dataloader to use batches.
+- The `dataset` should be an object of the subclass of
+  `jax_dataloader.core.Dataset` or `torch.utils.data.Dataset` or (the
+  huggingface) `datasets.Dataset` or `tf.data.Dataset`.
+- The `backend` should be one of `"jax"` or `"pytorch"` or
+  `"tensorflow"`. This argument specifies which backend dataloader to
+  load batches.
 
-``` python
-import jax_dataloader as jdl
-import jax.numpy as jnp
-```
+Note that not every dataset is compatible with every backend. See the
+compatibility table below:
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&#10;    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+&#10;    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+
+|                  | \`jdl.Dataset\` | \`torch_data.Dataset\` | \`tf.data.Dataset\` | \`datasets.Dataset\` |
+|------------------|-----------------|------------------------|---------------------|----------------------|
+| \`"jax"\`        | ✅              | ❌                     | ❌                  | ✅                   |
+| \`"pytorch"\`    | ✅              | ✅                     | ❌                  | ✅                   |
+| \`"tensorflow"\` | ✅              | ❌                     | ✅                  | ✅                   |
+
+</div>
 
 ### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/dataset.html#arraydataset)
 
@@ -94,13 +116,38 @@ y = jnp.arange(10)
 arr_ds = jdl.ArrayDataset(X, y)
 ```
 
-This `arr_ds` can be loaded by both `"jax"` and `"pytorch"` dataloaders.
+This `arr_ds` can be loaded by *every* backends.
 
 ``` python
 # Create a `DataLoader` from the `ArrayDataset` via jax backend
 dataloader = jdl.DataLoader(arr_ds, 'jax', batch_size=5, shuffle=True)
 # Or we can use the pytorch backend
 dataloader = jdl.DataLoader(arr_ds, 'pytorch', batch_size=5, shuffle=True)
+```
+
+### Using Huggingface Datasets
+
+The huggingface [datasets](https://github.com/huggingface/datasets) is a
+morden library for downloading, pre-processing, and sharing datasets.
+`jax_dataloader` supports directly passing the huggingface datasets.
+
+``` python
+from datasets import load_dataset
+```
+
+For example, We load the `"squad"` dataset from `datasets`:
+
+``` python
+hf_ds = load_dataset("squad")
+```
+
+Then, we can use `jax_dataloader` to load batches of `hf_ds`.
+
+``` python
+# Create a `DataLoader` from the `datasets.Dataset` via jax backend
+dataloader = jdl.DataLoader(hf_ds['train'], 'jax', batch_size=5, shuffle=True)
+# Or we can use the pytorch backend
+dataloader = jdl.DataLoader(hf_ds['train'], 'pytorch', batch_size=5, shuffle=True)
 ```
 
 ### Using Pytorch Datasets
@@ -147,27 +194,24 @@ This `pt_ds` can **only** be loaded via `"pytorch"` dataloaders.
 dataloader = jdl.DataLoader(pt_ds, 'pytorch', batch_size=5, shuffle=True)
 ```
 
-### Using Huggingface Datasets
+### Using Tensowflow Datasets
 
-The huggingface [datasets](https://github.com/huggingface/datasets) is a
-morden library for downloading, pre-processing, and sharing datasets.
-`jax_dataloader` supports directly passing the huggingface datasets.
+`jax_dataloader` supports directly passing the [tensorflow
+datasets](www.tensorflow.org/datasets).
 
 ``` python
-from datasets import load_dataset
+import tensorflow_datasets as tfds
+import tensorflow as tf
 ```
 
-For example, We load the `"squad"` dataset from `datasets`:
+For instance, we can load the MNIST dataset from `tensorflow_datasets`
 
 ``` python
-hf_ds = load_dataset("squad")
+tf_ds = tfds.load('mnist', split='test', as_supervised=True)
 ```
 
-This `hf_ds` can be loaded via `"jax"` and `"pytorch"` dataloaders.
+and use `jax_dataloader` for iterating the dataset.
 
 ``` python
-# Create a `DataLoader` from the `datasets.Dataset` via jax backend
-dataloader = jdl.DataLoader(hf_ds['train'], 'jax', batch_size=5, shuffle=True)
-# Or we can use the pytorch backend
-dataloader = jdl.DataLoader(hf_ds['train'], 'pytorch', batch_size=5, shuffle=True)
+dataloader = jdl.DataLoader(tf_ds, 'tensorflow', batch_size=5, shuffle=True)
 ```
