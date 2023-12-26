@@ -12,7 +12,7 @@ from threading import Thread, Event
 from queue import Queue
 
 # %% auto 0
-__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator', 'DataLoaderJAX']
+__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator', 'to_jax_dataset', 'DataLoaderJAX']
 
 # %% ../../nbs/loader.jax.ipynb 4
 def chunk(seq: Sequence, size: int) -> List[Sequence]:
@@ -74,6 +74,17 @@ class MultiprocessIterator(Thread):
 
 
 # %% ../../nbs/loader.jax.ipynb 7
+@dispatch
+def to_jax_dataset(dataset: JAXDataset):
+    if isinstance(dataset, ArrayDataset):
+        dataset.asnumpy()
+    return dataset
+
+@dispatch
+def to_jax_dataset(dataset: HFDataset):
+    return dataset.with_format('jax')
+
+# %% ../../nbs/loader.jax.ipynb 8
 class DataLoaderJAX(BaseDataLoader):
 
     @typecheck
@@ -87,9 +98,7 @@ class DataLoaderJAX(BaseDataLoader):
         **kwargs
     ):
         self.key = jrand.PRNGKey(get_config().global_seed)
-        self.dataset = dataset
-        if isinstance(dataset, ArrayDataset):
-            self.dataset.asnumpy()
+        self.dataset = to_jax_dataset(dataset)
         
         self.indices = np.arange(len(dataset))
         self.batch_size = batch_size

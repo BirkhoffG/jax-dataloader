@@ -34,7 +34,7 @@ def to_torch_dataset(dataset: TorchDataset):
 
 @dispatch
 def to_torch_dataset(dataset: HFDataset):
-    return dataset.with_format("jax")
+    return dataset.with_format("numpy")
 
 # %% ../../nbs/loader.torch.ipynb 7
 class DataLoaderPytorch(BaseDataLoader):
