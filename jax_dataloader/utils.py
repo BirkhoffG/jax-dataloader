@@ -8,7 +8,7 @@ import collections
 
 # %% auto 0
 __all__ = ['Config', 'get_config', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed', 'check_tf_installed',
-           'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset', 'asnumpy', 'PRNGSequence']
+           'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset', 'asnumpy']
 
 # %% ../nbs/utils.ipynb 6
 @dataclass
@@ -94,23 +94,3 @@ def asnumpy(x) -> np.ndarray:
         return map(asnumpy, x)
     else:
         raise ValueError(f"Unknown type: {type(x)}")
-
-# %% ../nbs/utils.ipynb 25
-class PRNGSequence(Iterator[jrand.PRNGKey]):
-    """An Interator of Jax PRNGKey (minimal version of `haiku.PRNGSequence`)."""
-
-    def __init__(self, seed: int):
-        self._key = jax.random.PRNGKey(seed)
-        self._subkeys = collections.deque()
-
-    def reserve(self, num):
-        """Splits additional ``num`` keys for later use."""
-        if num > 0:
-            new_keys = tuple(jax.random.split(self._key, num + 1))
-            self._key = new_keys[0]
-            self._subkeys.extend(new_keys[1:])
-            
-    def __next__(self):
-        if not self._subkeys:
-            self.reserve(get_config().rng_reserve_size)
-        return self._subkeys.popleft()
