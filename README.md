@@ -80,26 +80,11 @@ follows similar API as the pytorch dataloader.
 Note that not every dataset is compatible with every backend. See the
 compatibility table below:
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&#10;    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-&#10;    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-
-|                  | \`jdl.Dataset\` | \`torch_data.Dataset\` | \`tf.data.Dataset\` | \`datasets.Dataset\` |
-|------------------|-----------------|------------------------|---------------------|----------------------|
-| \`"jax"\`        | ✅              | ❌                     | ❌                  | ✅                   |
-| \`"pytorch"\`    | ✅              | ✅                     | ❌                  | ✅                   |
-| \`"tensorflow"\` | ✅              | ❌                     | ✅                  | ✅                   |
-
-</div>
+|                | `jdl.Dataset` | `torch_data.Dataset` | `tf.data.Dataset` | `datasets.Dataset` |
+|:---------------|:--------------|:---------------------|:------------------|:-------------------|
+| `"jax"`        | ❌            | ❌                   | ❌                | ✅                 |
+| `"pytorch"`    | ❌            | ✅                   | ❌                | ✅                 |
+| `"tensorflow"` | ❌            | ❌                   | ✅                | ✅                 |
 
 ### Using [`ArrayDataset`](https://birkhoffg.github.io/jax-dataloader/dataset.html#arraydataset)
 
