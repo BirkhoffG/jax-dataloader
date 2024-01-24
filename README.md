@@ -6,7 +6,8 @@
 ![CI
 status](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/nbdev.yaml/badge.svg)
 ![Docs](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/deploy.yaml/badge.svg)
-![pypi](https://img.shields.io/pypi/v/jax-dataloader.svg) ![GitHub
+![pypi](https://img.shields.io/pypi/v/jax-dataloader.svg)
+![Downloads](https://static.pepy.tech/badge/jax-dataloader.png) ![GitHub
 License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 
 ## Overview
