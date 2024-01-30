@@ -62,7 +62,8 @@ def _check_backend_compatibility(ds, backend: str):
     return DataLoader(ds, backend=backend)
 
 # %% ../nbs/core.ipynb 8
-def get_backend_compatibilities() -> dict[str, list[type]]:
+def get_backend_compatibilities() -> dict[str, list[type]]: # { backend: [supported datasets] }
+    """Return list of supported dataloader backends for each dataset type"""
 
     ds = {
         JAXDataset: ArrayDataset(np.array([1,2,3])),
