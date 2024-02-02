@@ -106,16 +106,16 @@ class DataLoaderJAX(BaseDataLoader):
         self.drop_last = drop_last
     
     def __iter__(self):
-        if self.shuffle:
-            self.indices = jrand.permutation(self.next_key(), self.indices).__array__()
+        # shuffle (permutation) indices every epoch        
+        indices = jrand.permutation(self.next_key(), self.indices).__array__() if self.shuffle else self.indices
         
         if self.drop_last:
-            self.indices = self.indices[:len(self.indices) - len(self.indices) % self.batch_size]
-        return EpochIterator(self.dataset, self.batch_size, self.indices)
+            indices = indices[:len(self.indices) - len(self.indices) % self.batch_size]
+        return EpochIterator(self.dataset, self.batch_size, indices)
     
     def next_key(self):
         self.key, subkey = jrand.split(self.key)
         return subkey
     
     def __len__(self):
-        return len(self.indices) // self.batch_size
+        return len(self.indices) // self.batch_size + int(not self.drop_last)
