@@ -203,6 +203,10 @@ def main():
         TFDataset: "tf",
         HFDataset: "hf",
     }
+    print('Downloading datasets...')
+    # download datasets
+    for ds_name in type2ds_name.values(): get_datasets(ds_name) 
+
     runtime = {}
     config = get_config()
     for backend, ds in compat.items():
@@ -213,16 +217,18 @@ def main():
 
             for i, ds_type in enumerate(SUPPORTED_DATASETS):
                 if _supported[i]:
+                    
                     ds_name = type2ds_name[ds_type]
                     config.dataset_type = ds_name
+                    print(f"backend={backend}, dataset={ds_name}:")
                     _, runtime_per_epoch = train_and_evaluate(config, "/tmp/mnist")
-                    runtime[backend]["dataset=" + ds_name] = runtime_per_epoch
-
-                    rich.print(
-                        f"[backend={backend}, dataset={ds_name}] Runtime per epoch: {np.mean(runtime_per_epoch)} (std={np.std(runtime_per_epoch)})."
-                    )
+                    runtime["backend=" + backend]["dataset=" + ds_name] = runtime_per_epoch
+                    
+                    rich.print(f"Runtime per epoch: {np.mean(runtime_per_epoch): .3f} (std={np.std(runtime_per_epoch): .3f}).")
                 else:
-                    runtime[backend]["dataset=" + ds_name] = []
+                    ds_name = type2ds_name[ds_type]
+                    runtime["backend=" + backend]["dataset=" + ds_name] = []
+                    print(f"backend={backend}, dataset={ds_name}: Not supported. Skipping.")
 
     return runtime
 
