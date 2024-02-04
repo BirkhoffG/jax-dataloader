@@ -26,10 +26,7 @@ try:
     import torch.utils.data as torch_data
     import torch
 
-    TorchDataset = Annotated[
-        torch_data.Dataset,
-        Is[lambda _: torch_data is not None],
-    ]
+    TorchDataset = torch_data.Dataset
 except ModuleNotFoundError:
     torch_data = None
     torch = None
@@ -55,10 +52,11 @@ try:
     import tensorflow as tf
     import tensorflow_datasets as tfds
 
-    TFDataset = Annotated[
-        tf.data.Dataset,
-        Is[lambda _: tf is not None],
-    ]
+    # TFDataset = Annotated[
+    #     tf.data.Dataset,
+    #     Is[lambda _: tf is not None],
+    # ]
+    TFDataset = tf.data.Dataset
 except ModuleNotFoundError:
     tf = None
     tfds = None
