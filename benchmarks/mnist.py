@@ -16,6 +16,13 @@ from flax.training import train_state
 import time
 import rich
 import einops
+import os
+import json
+
+
+# https://github.com/huggingface/datasets/blob/main/benchmarks/benchmark_iterating.py
+RESULTS_BASEPATH, RESULTS_FILENAME = os.path.split(__file__)
+RESULTS_FILE_PATH = os.path.join(RESULTS_BASEPATH, "results", RESULTS_FILENAME.replace(".py", ".json"))
 
 
 class CNN(nn.Module):
@@ -23,7 +30,8 @@ class CNN(nn.Module):
 
     @nn.compact
     def __call__(self, x: jnp.ndarray):
-        x = einops.rearrange(x, "b h w -> b h w 1")
+        if x.ndim == 3:
+            x = einops.rearrange(x, "h w c -> h w c 1")
         x = x / 255.0
         x = nn.Conv(features=32, kernel_size=(3, 3))(x)
         x = nn.relu(x)
@@ -121,10 +129,6 @@ def train_and_evaluate(
         (train_ds, test_ds),
     )
     rng = jax.random.key(0)
-
-    summary_writer = tensorboard.SummaryWriter(workdir)
-    summary_writer.hparams(dict(config))
-
     rng, init_rng = jax.random.split(rng)
     state = create_train_state(init_rng, config)
 
@@ -135,13 +139,17 @@ def train_and_evaluate(
         state, train_loss, train_accuracy = train_epoch(state, train_dl)
         runtime_per_epoch.append(time.time() - start)
 
-        summary_writer.scalar("train_loss", train_loss, epoch)
-        summary_writer.scalar("train_accuracy", train_accuracy, epoch)
-        summary_writer.scalar("runtime_per_epoch", runtime_per_epoch[-1], epoch)
-        # summary_writer.scalar('test_loss', test_loss, epoch)
-        # summary_writer.scalar('test_accuracy', test_accuracy, epoch)
+        test_accuracy = []
+        for batch in test_dl:
+            images, labels = get_img_labels(batch)
+            logits = state.apply_fn({"params": state.params}, images)
+            accuracy = jnp.mean(jnp.argmax(logits, -1) == labels)
+            test_accuracy.append(accuracy)
+        
+        test_accuracy = np.mean(test_accuracy)
 
-    summary_writer.flush()
+    rich.print(f"Test accuracy: {test_accuracy:.3f}")
+    rich.print(f"Training batches: {len(train_dl)}")
     return state, runtime_per_epoch
 
 
@@ -171,8 +179,8 @@ def get_datasets(ds_type: Literal["jax", "torch", "tf", "hf"]):
     elif ds_type == "torch":
         train_ds, test_ds = train_ds_torch, test_ds_torch
     elif ds_type == "hf":
-        train_ds = hf_datasets.load_dataset("fashion_mnist", split="train")
-        test_ds = hf_datasets.load_dataset("fashion_mnist", split="test")
+        ds = hf_datasets.load_dataset("fashion_mnist")
+        train_ds, test_ds = ds["train"], ds["test"]
     elif ds_type == "tf":
         train_ds = tfds.load("fashion_mnist", split="train")
         test_ds = tfds.load("fashion_mnist", split="test")
@@ -221,18 +229,21 @@ def main():
                     ds_name = type2ds_name[ds_type]
                     config.dataset_type = ds_name
                     print(f"backend={backend}, dataset={ds_name}:")
-                    _, runtime_per_epoch = train_and_evaluate(config, "/tmp/mnist")
+                    train_state, runtime_per_epoch = train_and_evaluate(config, "/tmp/mnist")
                     runtime["backend=" + backend]["dataset=" + ds_name] = runtime_per_epoch
                     
-                    rich.print(f"Runtime per epoch: {np.mean(runtime_per_epoch): .3f} (std={np.std(runtime_per_epoch): .3f}).")
+                    rich.print(f"Runtime per epoch: {np.mean(runtime_per_epoch[1:]): .3f} (std={np.std(runtime_per_epoch[1:]): .3f}).")
+                    del train_state
                 else:
                     ds_name = type2ds_name[ds_type]
                     runtime["backend=" + backend]["dataset=" + ds_name] = []
                     print(f"backend={backend}, dataset={ds_name}: Not supported. Skipping.")
-
+    
+    with open(RESULTS_FILE_PATH, "wb") as f:
+        f.write(json.dumps(runtime).encode("utf-8"))
     return runtime
 
 
 if __name__ == "__main__":
     # main()
-    rich.print_json(main())
+    rich.print_json(data=main())
