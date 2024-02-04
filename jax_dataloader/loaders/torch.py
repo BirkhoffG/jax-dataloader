@@ -8,6 +8,7 @@ from ..datasets import Dataset, ArrayDataset, JAXDataset
 from ..utils import check_pytorch_installed
 from ..tests import *
 from jax.tree_util import tree_map
+import warnings
 
 
 # %% auto 0
