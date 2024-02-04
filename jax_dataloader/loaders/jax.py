@@ -82,7 +82,7 @@ def to_jax_dataset(dataset: JAXDataset):
 
 @dispatch
 def to_jax_dataset(dataset: HFDataset):
-    return dataset.with_format('jax')
+    return dataset.with_format('numpy')
 
 # %% ../../nbs/loader.jax.ipynb 8
 class DataLoaderJAX(BaseDataLoader):
