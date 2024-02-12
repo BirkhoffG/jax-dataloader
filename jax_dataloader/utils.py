@@ -8,7 +8,7 @@ import collections
 
 # %% auto 0
 __all__ = ['Config', 'get_config', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed', 'check_tf_installed',
-           'is_hf_dataset', 'is_torch_dataset', 'is_jdl_dataset', 'is_tf_dataset', 'asnumpy']
+           'asnumpy']
 
 # %% ../nbs/utils.ipynb 6
 @dataclass
@@ -60,27 +60,7 @@ def check_tf_installed():
             "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
             "https://www.tensorflow.org/install/pip.")
 
-# %% ../nbs/utils.ipynb 17
-def is_hf_dataset(dataset):
-    return hf_datasets and (
-        isinstance(dataset, hf_datasets.Dataset) 
-        or isinstance(dataset, hf_datasets.DatasetDict)
-    )
-
-
 # %% ../nbs/utils.ipynb 18
-def is_torch_dataset(dataset):
-    return torch_data and isinstance(dataset, torch_data.Dataset)
-
-# %% ../nbs/utils.ipynb 19
-def is_jdl_dataset(dataset):
-    return isinstance(dataset, jdl.Dataset)
-
-# %% ../nbs/utils.ipynb 20
-def is_tf_dataset(dataset):
-    return tf and isinstance(dataset, tf.data.Dataset)
-
-# %% ../nbs/utils.ipynb 22
 def asnumpy(x) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x

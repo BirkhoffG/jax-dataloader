@@ -124,8 +124,4 @@ d = { 'settings': { 'branch': 'master',
                                                                                    'jax_dataloader/utils.py'),
                                       'jax_dataloader.utils.get_config': ('utils.html#get_config', 'jax_dataloader/utils.py'),
                                       'jax_dataloader.utils.has_pytorch_tensor': ( 'utils.html#has_pytorch_tensor',
-                                                                                   'jax_dataloader/utils.py'),
-                                      'jax_dataloader.utils.is_hf_dataset': ('utils.html#is_hf_dataset', 'jax_dataloader/utils.py'),
-                                      'jax_dataloader.utils.is_jdl_dataset': ('utils.html#is_jdl_dataset', 'jax_dataloader/utils.py'),
-                                      'jax_dataloader.utils.is_tf_dataset': ('utils.html#is_tf_dataset', 'jax_dataloader/utils.py'),
-                                      'jax_dataloader.utils.is_torch_dataset': ('utils.html#is_torch_dataset', 'jax_dataloader/utils.py')}}}
+                                                                                   'jax_dataloader/utils.py')}}}
