@@ -3,7 +3,6 @@ import jax
 import tensorflow_datasets as tfds
 import tensorflow as tf
 from torch.utils.data import TensorDataset
-import pytest
 
 
 def test_jax():

@@ -1,7 +1,6 @@
 import jax_dataloader as jdl
 import torch, jax
 from torch.utils.data import TensorDataset
-import pytest
 
 
 def test_jax():

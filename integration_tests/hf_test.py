@@ -1,8 +1,6 @@
 import jax_dataloader as jdl
 import numpy as np
 import datasets as hfds
-from torch.utils.data import TensorDataset
-import pytest
 
 
 def test_hf():
