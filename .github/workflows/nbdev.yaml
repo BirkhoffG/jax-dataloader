@@ -76,25 +76,25 @@ jobs:
       - name: Test JAX backend
         if: ${{ matrix.backend == 'jax'}}
         run: |
-          python integration_tests/jax_test.py
+          pytest integration_tests/jax_test.py
 
       - name: Test Pytorch Dependencies
         if: ${{ matrix.backend == 'torch'}}
         run: |
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          python integration_tests/torch_test.py
+          pytest integration_tests/torch_test.py
 
       - name: Test Tensorflow Dependencies
         if: ${{ matrix.backend == 'tf'}}
         run: |
           pip install -e .[tensorflow]
-          python integration_tests/tf_test.py
+          pytest integration_tests/tf_test.py
 
       - name: Test Huggingface Dependencies
         if: ${{ matrix.backend == 'hf'}}
         run: |
           pip install -e .[huggingface]
-          python integration_tests/hf_test.py
+          pytest integration_tests/hf_test.py
 
   nbdev-tests:
     needs: nbdev-sync
