@@ -93,7 +93,7 @@ jobs:
       - name: Test Huggingface Dependencies
         if: ${{ matrix.backend == 'hf'}}
         run: |
-          pip install -e .[hf]
+          pip install -e .[huggingface]
           python integration_tests/hf_test.py
 
   nbdev-tests:
