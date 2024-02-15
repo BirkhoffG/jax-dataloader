@@ -14,13 +14,13 @@ def test_jax():
 def test_torch():
     with pytest.raises(ModuleNotFoundError):
         ds = jdl.ArrayDataset(jnp.ones((10, 3)), jnp.ones((10, 3)))
-        dl = jdl.DataLoader(ds, 'torch', batch_size=2)
+        dl = jdl.DataLoader(ds, 'pytorch', batch_size=2)
         for x, y in dl: z = x + y
 
 
 def test_tf():
     with pytest.raises(ModuleNotFoundError):
         ds = jdl.ArrayDataset(jnp.ones((10, 3)), jnp.ones((10, 3)))
-        dl = jdl.DataLoader(ds, 'tf', batch_size=2)
+        dl = jdl.DataLoader(ds, 'tensorflow', batch_size=2)
         for x, y in dl: z = x + y
 

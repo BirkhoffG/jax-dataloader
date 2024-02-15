@@ -13,7 +13,7 @@ def test_jax():
 
 def test_torch():
     ds = TensorDataset(torch.ones((10, 3)), torch.ones((10, 3)))    
-    dl = jdl.DataLoader(ds, 'torch', batch_size=2)
+    dl = jdl.DataLoader(ds, 'pytorch', batch_size=2)
     for x, y in dl: 
         z = x + y
         assert isinstance(z, jax.Array)
