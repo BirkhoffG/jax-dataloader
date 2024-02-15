@@ -2,7 +2,6 @@ import jax_dataloader as jdl
 import jax
 import tensorflow_datasets as tfds
 import tensorflow as tf
-from torch.utils.data import TensorDataset
 
 
 def test_jax():
