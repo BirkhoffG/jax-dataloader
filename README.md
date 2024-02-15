@@ -12,19 +12,21 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 
 ## Overview
 
-`jax_dataloader` provides a high-level *pytorch-like* dataloader API for
-`jax`. It supports
+`jax_dataloader` brings *pytorch-like* dataloader API to `jax`. It
+supports
 
-- **downloading and pre-processing datasets** via [huggingface
-  datasets](https://github.com/huggingface/datasets), [pytorch
-  Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset),
-  and [tensorflow dataset](www.tensorflow.org/datasets);
-
-- **iteratively loading batches** via (vanillla) [jax
-  dataloader](https://birkhoffg.github.io/jax-dataloader/core.html#jax-dataloader),
-  [pytorch
-  dataloader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
-  and [tensorflow dataset](www.tensorflow.org/datasets).
+- **4 datasets to download and pre-process data**:
+  - [jax dataset](https://birkhoffg.github.io/jax-dataloader/dataset/)
+  - [huggingface datasets](https://github.com/huggingface/datasets)
+  - [pytorch
+    Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset)
+  - [tensorflow dataset](www.tensorflow.org/datasets)
+- **3 backends to iteratively load batches**:
+  - [jax
+    dataloader](https://birkhoffg.github.io/jax-dataloader/core.html#jax-dataloader)
+  - [pytorch
+    dataloader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+  - [tensorflow dataset](www.tensorflow.org/datasets)
 
 A minimum `jax-dataloader` example:
 
@@ -57,9 +59,11 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 
 > **Note**
 >
-> We will only install `jax`-related dependencies. If you wish to use
-> integration of `pytorch`, huggingface `datasets`, or `tensorflow`, we
-> recommend manually install those dependencies.
+> We keep `jax-dataloader`’s dependencies minimum, which only install
+> `jax`-related dependencies, and `plum-dispatch` for backend
+> dispatching. If you wish to use integration of `pytorch`, huggingface
+> `datasets`, or `tensorflow`, we recommend manually install those
+> dependencies.
 >
 > You can also run `pip install jax-dataloader[all]` to install
 > everything (not recommended).
