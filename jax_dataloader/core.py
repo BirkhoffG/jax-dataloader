@@ -89,11 +89,11 @@ class DataLoader:
 
     def __init__(
         self,
-        dataset, # Dataset or Pytorch Dataset or HuggingFace Dataset
-        backend: str, # Dataloader backend
-        batch_size: int = 1,  # batch size
-        shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
-        drop_last: bool = False, # drop last batches or not
+        dataset, # Dataset from which to load the data
+        backend: Literal['jax', 'pytorch', 'tensorflow'], # Dataloader backend to load the dataset
+        batch_size: int = 1,  # How many samples per batch to load
+        shuffle: bool = False,  # If true, dataloader reshuffles every epoch
+        drop_last: bool = False, # If true, drop the last incomplete batch
         **kwargs
     ):
         dl_cls = _dispatch_dataloader(backend)
