@@ -16,12 +16,15 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 supports
 
 - **4 datasets to download and pre-process data**:
+
   - [jax dataset](https://birkhoffg.github.io/jax-dataloader/dataset/)
   - [huggingface datasets](https://github.com/huggingface/datasets)
   - [pytorch
     Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset)
   - [tensorflow dataset](www.tensorflow.org/datasets)
+
 - **3 backends to iteratively load batches**:
+
   - [jax
     dataloader](https://birkhoffg.github.io/jax-dataloader/core.html#jax-dataloader)
   - [pytorch
@@ -36,6 +39,9 @@ import jax_dataloader as jdl
 dataloader = jdl.DataLoader(
     dataset, # Can be a jdl.Dataset or pytorch or huggingface dataset
     backend='jax', # Use 'jax' for loading data (also supports `pytorch`)
+    batch_size=32, # Batch size 
+    shuffle=True, # Shuffle the dataloader every iteration
+    drop_last=False, # Drop the last batch or not
 )
 
 batch = next(iter(dataloader)) # iterate next batch
@@ -113,6 +119,8 @@ This `arr_ds` can be loaded by *every* backends.
 dataloader = jdl.DataLoader(arr_ds, 'jax', batch_size=5, shuffle=True)
 # Or we can use the pytorch backend
 dataloader = jdl.DataLoader(arr_ds, 'pytorch', batch_size=5, shuffle=True)
+# Or we can use the tensorflow backend
+dataloader = jdl.DataLoader(arr_ds, 'tensorflow', batch_size=5, shuffle=True)
 ```
 
 ### Using Huggingface Datasets
@@ -138,6 +146,8 @@ Then, we can use `jax_dataloader` to load batches of `hf_ds`.
 dataloader = jdl.DataLoader(hf_ds['train'], 'jax', batch_size=5, shuffle=True)
 # Or we can use the pytorch backend
 dataloader = jdl.DataLoader(hf_ds['train'], 'pytorch', batch_size=5, shuffle=True)
+# Or we can use the tensorflow backend
+dataloader = jdl.DataLoader(hf_ds['train'], 'tensorflow', batch_size=5, shuffle=True)
 ```
 
 ### Using Pytorch Datasets
@@ -169,13 +179,7 @@ We load the MNIST dataset from `torchvision`. The `ToNumpy` object
 transforms images to `numpy.array`.
 
 ``` python
-class ToNumpy(object):
-  def __call__(self, pic):
-    return np.array(pic, dtype=float)
-```
-
-``` python
-pt_ds = MNIST('/tmp/mnist/', download=True, transform=ToNumpy(), train=False)
+pt_ds = MNIST('/tmp/mnist/', download=True, transform=lambda x: np.array(x, dtype=float), train=False)
 ```
 
 This `pt_ds` can **only** be loaded via `"pytorch"` dataloaders.
