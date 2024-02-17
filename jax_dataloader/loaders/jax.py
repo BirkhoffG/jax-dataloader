@@ -12,14 +12,9 @@ from threading import Thread, Event
 from queue import Queue
 
 # %% auto 0
-__all__ = ['chunk', 'EpochIterator', 'MultiprocessIterator', 'to_jax_dataset', 'DataLoaderJAX']
+__all__ = ['EpochIterator', 'to_jax_dataset', 'DataLoaderJAX']
 
 # %% ../../nbs/loader.jax.ipynb 4
-def chunk(seq: Sequence, size: int) -> List[Sequence]:
-    return [seq[pos:pos + size] for pos in range(0, len(seq), size)]  
-
-
-# %% ../../nbs/loader.jax.ipynb 5
 def EpochIterator(
     data,
     batch_size: int,
@@ -29,51 +24,7 @@ def EpochIterator(
         idx = indices[i:i+batch_size]
         yield data[idx]
 
-# %% ../../nbs/loader.jax.ipynb 6
-class MultiprocessIterator(Thread):
-    """[WIP] Multiprocessing Epoch Iterator"""
-    
-    def __init__(self, data, batch_size: int, indices=None):
-        super().__init__()
-        self.data = data
-        indices = np.arange(len(data)) if indices is None else indices
-        batches = chunk(indices, batch_size)
-        self.iter_idx = iter(batches)
-        self.output_queue = Queue() # TODO: maxsize
-        self.terminate_event = Event()
-        self.start()
-
-    def run(self):
-        try:
-            while True:
-                result = self.get_data()
-                self.output_queue.put(result)
-        except StopIteration:
-            self.output_queue.put(None)
-
-    def __next__(self):
-        result = self.output_queue.get()
-        if result is None:
-            self.close()
-            raise StopIteration()
-        return result
-    
-    def __iter__(self):
-        return self
-    
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        self.terminate_event.set()
-
-    def get_data(self):
-        batch_idx = next(self.iter_idx)
-        batch = self.data[batch_idx]
-        return batch
-
-
-# %% ../../nbs/loader.jax.ipynb 7
+# %% ../../nbs/loader.jax.ipynb 5
 @dispatch
 def to_jax_dataset(dataset: JAXDataset):
     if isinstance(dataset, ArrayDataset):
@@ -84,7 +35,7 @@ def to_jax_dataset(dataset: JAXDataset):
 def to_jax_dataset(dataset: HFDataset):
     return dataset.with_format('numpy')
 
-# %% ../../nbs/loader.jax.ipynb 8
+# %% ../../nbs/loader.jax.ipynb 6
 class DataLoaderJAX(BaseDataLoader):
 
     @typecheck
