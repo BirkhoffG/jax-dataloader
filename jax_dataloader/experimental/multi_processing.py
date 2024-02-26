@@ -11,17 +11,19 @@ import jax_dataloader as jdl
 from threading import Thread, Event
 from queue import Queue, Full
 import multiprocessing as mp
-import weakref
+try:
+    import numba
+except ModuleNotFoundError:
+    numba = None
 
 # %% auto 0
 __all__ = ['chunk', 'EpochIterator']
 
-# %% ../../nbs/experimental/mp.ipynb 2
+# %% ../../nbs/experimental/mp.ipynb 3
 def chunk(seq: Sequence, size: int) -> List[Sequence]:
     return [seq[pos:pos + size] for pos in range(0, len(seq), size)]  
 
-
-# %% ../../nbs/experimental/mp.ipynb 3
+# %% ../../nbs/experimental/mp.ipynb 4
 class EpochIterator(Thread):
     """[WIP] Multiprocessing Epoch Iterator"""
     
