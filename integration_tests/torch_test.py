@@ -9,6 +9,7 @@ def test_jax_ds():
     ds = jdl.ArrayDataset(jnp.ones((10, 3)), jnp.ones((10, 3)))
     assert len(ds) == 10
     dl = jdl.DataLoader(ds, 'pytorch', batch_size=2)
+    batch = next(iter(dl))
     for x, y in dl:
         z = x + y
   
@@ -16,6 +17,7 @@ def test_jax_ds():
 def test_torch():
     ds = TensorDataset(torch.ones((10, 3)), torch.ones((10, 3)))    
     dl = jdl.DataLoader(ds, 'pytorch', batch_size=2)
+    batch = next(iter(dl))
     for x, y in dl: 
         z = x + y
         assert isinstance(z, np.ndarray)
