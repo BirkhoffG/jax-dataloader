@@ -37,10 +37,10 @@ A minimum `jax-dataloader` example:
 import jax_dataloader as jdl
 
 dataloader = jdl.DataLoader(
-    dataset, # Can be a jdl.Dataset or pytorch or huggingface dataset
-    backend='jax', # Use 'jax' for loading data (also supports `pytorch`)
+    dataset, # Can be a jdl.Dataset or pytorch or huggingface or tensorflow dataset
+    backend='jax', # Use 'jax' backend for loading data
     batch_size=32, # Batch size 
-    shuffle=True, # Shuffle the dataloader every iteration
+    shuffle=True, # Shuffle the dataloader every iteration or not
     drop_last=False, # Drop the last batch or not
 )
 
@@ -66,10 +66,11 @@ pip install git+https://github.com/BirkhoffG/jax-dataloader.git
 > **Note**
 >
 > We keep `jax-dataloader`’s dependencies minimum, which only install
-> `jax`-related dependencies, and `plum-dispatch` for backend
-> dispatching. If you wish to use integration of `pytorch`, huggingface
-> `datasets`, or `tensorflow`, we recommend manually install those
-> dependencies.
+> `jax` and `plum-dispatch` (for backend dispatching) when installing.
+> If you wish to use integration of [`pytorch`](https://pytorch.org/),
+> huggingface [`datasets`](https://github.com/huggingface/datasets), or
+> [`tensorflow`](https://www.tensorflow.org/), we highly recommend
+> manually install those dependencies.
 >
 > You can also run `pip install jax-dataloader[all]` to install
 > everything (not recommended).
