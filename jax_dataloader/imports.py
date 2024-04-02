@@ -63,6 +63,11 @@ except ModuleNotFoundError:
     TFDataset = Annotated[None, Is[lambda _: tf is not None]]
 
 try:
+    import grain.python as grain
+except ModuleNotFoundError:
+    grain = None
+
+try:
     import haiku as hk
 except ModuleNotFoundError:
     hk = None
