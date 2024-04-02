@@ -32,8 +32,12 @@ lic = licenses.get(cfg['license'].lower(), (cfg['license'], None))
 tensorflow_requirements = (cfg.get('tensorflow_requirements') or '').split()
 huggingface_requirements = (cfg.get('huggingface_requirements') or '').split()
 torch_requirements = (cfg.get('torch_requirements') or '').split()
+grain_requirements = (cfg.get('grain_requirements') or '').split()
 dev_requirements = (cfg.get('dev_requirements') or '').split()
-all_requirements = requirements + tensorflow_requirements + huggingface_requirements + torch_requirements + dev_requirements
+all_requirements = (
+    requirements + tensorflow_requirements + huggingface_requirements 
+    + torch_requirements + grain_requirements + dev_requirements
+)
 
 extras_require = {
     'all': all_requirements, 'dev': all_requirements,
