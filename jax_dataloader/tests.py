@@ -17,8 +17,8 @@ def get_batch(batch):
 
 # %% ../nbs/tests.ipynb 4
 def test_no_shuffle(cls, ds, batch_size: int, feats, labels):
-    dl = cls(ds, batch_size=batch_size, shuffle=False)
-    assert len(dl) == len(feats) // batch_size + 1
+    dl = cls(ds, batch_size=batch_size, shuffle=False, drop_last=False)
+    assert len(dl) == len(feats) // batch_size + bool(len(feats) % batch_size)
     for _ in range(2):
         X_list, Y_list = [], []
         for batch in dl:
@@ -48,7 +48,7 @@ def test_no_shuffle_drop_last(cls, ds, batch_size: int, feats, labels):
 def test_shuffle(cls, ds, batch_size: int, feats, labels):
     dl = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
     last_X, last_Y = jnp.array([]), jnp.array([])
-    assert len(dl) == len(feats) // batch_size + 1
+    assert len(dl) == len(feats) // batch_size + bool(len(feats) % batch_size)
     for _ in range(2):
         X_list, Y_list = [], []
         for batch in dl:
