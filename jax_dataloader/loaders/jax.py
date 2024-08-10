@@ -69,4 +69,5 @@ class DataLoaderJAX(BaseDataLoader):
         return subkey
     
     def __len__(self):
-        return len(self.indices) // self.batch_size + int(not self.drop_last)
+        complete_batches, remainder = divmod(len(self.indices), self.batch_size)
+        return complete_batches if self.drop_last else complete_batches + bool(remainder)
