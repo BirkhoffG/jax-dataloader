@@ -7,8 +7,8 @@ import jax_dataloader as jdl
 import collections
 
 # %% auto 0
-__all__ = ['Config', 'get_config', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed', 'check_tf_installed',
-           'asnumpy']
+__all__ = ['Config', 'get_config', 'manual_seed', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
+           'check_tf_installed', 'asnumpy']
 
 # %% ../nbs/utils.ipynb 6
 @dataclass
@@ -28,7 +28,12 @@ main_config = Config.default()
 def get_config() -> Config:
     return main_config
 
-# %% ../nbs/utils.ipynb 10
+# %% ../nbs/utils.ipynb 9
+def manual_seed(seed: int):
+    """Set the seed for the library"""
+    main_config.global_seed = seed
+
+# %% ../nbs/utils.ipynb 12
 def check_pytorch_installed():
     if torch_data is None:
         raise ModuleNotFoundError("`pytorch` library needs to be installed. "
@@ -36,7 +41,7 @@ def check_pytorch_installed():
             "https://pytorch.org/get-started/.")
 
 
-# %% ../nbs/utils.ipynb 12
+# %% ../nbs/utils.ipynb 14
 def has_pytorch_tensor(batch) -> bool:
     if isinstance(batch[0], torch.Tensor):
         return True
@@ -46,21 +51,21 @@ def has_pytorch_tensor(batch) -> bool:
     else:
         return False
 
-# %% ../nbs/utils.ipynb 13
+# %% ../nbs/utils.ipynb 15
 def check_hf_installed():
     if hf_datasets is None:
         raise ModuleNotFoundError("`datasets` library needs to be installed. "
             "Try `pip install datasets`. Please refer to huggingface documentation for details: "
             "https://huggingface.co/docs/datasets/installation.html.")
 
-# %% ../nbs/utils.ipynb 15
+# %% ../nbs/utils.ipynb 17
 def check_tf_installed():
     if tf is None:
         raise ModuleNotFoundError("`tensorflow` library needs to be installed. "
             "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
             "https://www.tensorflow.org/install/pip.")
 
-# %% ../nbs/utils.ipynb 18
+# %% ../nbs/utils.ipynb 20
 def asnumpy(x) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x

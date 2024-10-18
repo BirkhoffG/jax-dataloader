@@ -5,7 +5,7 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from . import BaseDataLoader
 from ..datasets import Dataset, ArrayDataset, JAXDataset
-from ..utils import check_pytorch_installed
+from ..utils import check_pytorch_installed, get_config
 from ..tests import *
 from jax.tree_util import tree_map
 import warnings
@@ -53,13 +53,20 @@ class DataLoaderPytorch(BaseDataLoader):
         super().__init__(dataset, batch_size, shuffle, drop_last)
         check_pytorch_installed()
         from torch.utils.data import BatchSampler, RandomSampler, SequentialSampler
+        import torch
 
         if 'sampler' in kwargs:
             warnings.warn("`sampler` is currently not supported. We will ignore it and use `shuffle` instead.")
             del kwargs['sampler']
 
+        # convert to torch dataset
         dataset = to_torch_dataset(dataset)
-        sampler = RandomSampler(dataset) if shuffle else SequentialSampler(dataset)
+        # init batch sampler
+        generator = torch.Generator().manual_seed(get_config().global_seed)
+        if shuffle: 
+            sampler = RandomSampler(dataset, generator=generator)
+        else:       
+            sampler = SequentialSampler(dataset)
         batch_sampler = BatchSampler(sampler, batch_size=batch_size, drop_last=drop_last)
 
         self.dataloader = torch_data.DataLoader(

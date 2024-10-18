@@ -125,4 +125,5 @@ d = { 'settings': { 'branch': 'master',
                                                                                    'jax_dataloader/utils.py'),
                                       'jax_dataloader.utils.get_config': ('utils.html#get_config', 'jax_dataloader/utils.py'),
                                       'jax_dataloader.utils.has_pytorch_tensor': ( 'utils.html#has_pytorch_tensor',
-                                                                                   'jax_dataloader/utils.py')}}}
+                                                                                   'jax_dataloader/utils.py'),
+                                      'jax_dataloader.utils.manual_seed': ('utils.html#manual_seed', 'jax_dataloader/utils.py')}}}
