@@ -4,9 +4,10 @@
 from __future__ import print_function, division, annotations
 from .imports import *
 from .datasets import ArrayDataset
+import jax_dataloader as jdl
 
 # %% auto 0
-__all__ = ['test_dataloader']
+__all__ = ['test_shuffle_reproducible', 'test_dataloader']
 
 # %% ../nbs/tests.ipynb 3
 def get_batch(batch):
@@ -82,6 +83,31 @@ def test_shuffle_drop_last(cls, ds, batch_size: int, feats, labels):
         assert len(_X) == len(X_list) * batch_size
 
 # %% ../nbs/tests.ipynb 8
+def test_shuffle_reproducible(cls, ds, batch_size: int, feats, labels):
+    """Test that the shuffle is reproducible"""
+    def _iter_dataloader(dataloader):
+        X_list, Y_list = [], []
+        for batch in dataloader:
+            x, y = get_batch(batch)
+            X_list.append(x)
+            Y_list.append(y)
+        return X_list, Y_list
+
+    # Test that the shuffle is reproducible
+    jdl.manual_seed(0)
+    dl_1 = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
+    X_list_1, Y_list_1 = _iter_dataloader(dl_1)
+    dl_2 = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
+    X_list_2, Y_list_2 = _iter_dataloader(dl_2)
+    assert jnp.array_equal(jnp.concatenate(X_list_1), jnp.concatenate(X_list_2))
+
+    # Test that the shuffle is different if the seed is different
+    jdl.manual_seed(1234)
+    dl_3 = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
+    X_list_3, Y_list_3 = _iter_dataloader(dl_3)
+    assert not jnp.array_equal(jnp.concatenate(X_list_1), jnp.concatenate(X_list_3))
+
+# %% ../nbs/tests.ipynb 9
 def test_dataloader(cls, ds_type='jax', samples=1000, batch_size=12):
     feats = np.arange(samples).repeat(10).reshape(samples, 10)
     labels = np.arange(samples).reshape(samples, 1)
@@ -102,3 +128,4 @@ def test_dataloader(cls, ds_type='jax', samples=1000, batch_size=12):
     test_no_shuffle_drop_last(cls, ds, batch_size, feats, labels)
     test_shuffle(cls, ds, batch_size, feats, labels)
     test_shuffle_drop_last(cls, ds, batch_size, feats, labels)
+    test_shuffle_reproducible(cls, ds, batch_size, feats, labels)
