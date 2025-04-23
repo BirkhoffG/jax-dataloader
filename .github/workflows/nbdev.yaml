@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py: ['3.9', '3.10', '3.11', '3.12']
+        py: ['3.10', '3.11', '3.12']
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -117,7 +117,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -e .[dev]
+          pip install -e .[dev] -U
 
       - name: Run Tests
         run: nbdev_test
