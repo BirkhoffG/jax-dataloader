@@ -7,8 +7,8 @@ import jax_dataloader as jdl
 import collections
 
 # %% auto 0
-__all__ = ['Config', 'get_config', 'manual_seed', 'Generator', 'check_pytorch_installed', 'has_pytorch_tensor',
-           'check_hf_installed', 'check_tf_installed', 'asnumpy']
+__all__ = ['Config', 'get_config', 'manual_seed', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
+           'check_tf_installed', 'Generator', 'asnumpy']
 
 # %% ../nbs/utils.ipynb 7
 @dataclass
@@ -34,6 +34,38 @@ def manual_seed(seed: int):
     main_config.global_seed = seed
 
 # %% ../nbs/utils.ipynb 13
+def check_pytorch_installed():
+    if torch_data is None:
+        raise ModuleNotFoundError("`pytorch` library needs to be installed. "
+            "Try `pip install torch`. Please refer to pytorch documentation for details: "
+            "https://pytorch.org/get-started/.")
+
+
+# %% ../nbs/utils.ipynb 15
+def has_pytorch_tensor(batch) -> bool:
+    if isinstance(batch[0], torch.Tensor):
+        return True
+    elif isinstance(batch[0], (tuple, list)):
+        transposed = zip(*batch)
+        return any([has_pytorch_tensor(samples) for samples in transposed])
+    else:
+        return False
+
+# %% ../nbs/utils.ipynb 16
+def check_hf_installed():
+    if hf_datasets is None:
+        raise ModuleNotFoundError("`datasets` library needs to be installed. "
+            "Try `pip install datasets`. Please refer to huggingface documentation for details: "
+            "https://huggingface.co/docs/datasets/installation.html.")
+
+# %% ../nbs/utils.ipynb 18
+def check_tf_installed():
+    if tf is None:
+        raise ModuleNotFoundError("`tensorflow` library needs to be installed. "
+            "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
+            "https://www.tensorflow.org/install/pip.")
+
+# %% ../nbs/utils.ipynb 21
 class Generator:
     def __init__(
         self, 
@@ -86,38 +118,6 @@ class Generator:
         if self._torch_generator is None:
             raise ValueError("Neither pytorch generator or seed is specified.")
         return self._torch_generator
-
-# %% ../nbs/utils.ipynb 18
-def check_pytorch_installed():
-    if torch_data is None:
-        raise ModuleNotFoundError("`pytorch` library needs to be installed. "
-            "Try `pip install torch`. Please refer to pytorch documentation for details: "
-            "https://pytorch.org/get-started/.")
-
-
-# %% ../nbs/utils.ipynb 20
-def has_pytorch_tensor(batch) -> bool:
-    if isinstance(batch[0], torch.Tensor):
-        return True
-    elif isinstance(batch[0], (tuple, list)):
-        transposed = zip(*batch)
-        return any([has_pytorch_tensor(samples) for samples in transposed])
-    else:
-        return False
-
-# %% ../nbs/utils.ipynb 21
-def check_hf_installed():
-    if hf_datasets is None:
-        raise ModuleNotFoundError("`datasets` library needs to be installed. "
-            "Try `pip install datasets`. Please refer to huggingface documentation for details: "
-            "https://huggingface.co/docs/datasets/installation.html.")
-
-# %% ../nbs/utils.ipynb 23
-def check_tf_installed():
-    if tf is None:
-        raise ModuleNotFoundError("`tensorflow` library needs to be installed. "
-            "Try `pip install tensorflow`. Please refer to tensorflow documentation for details: "
-            "https://www.tensorflow.org/install/pip.")
 
 # %% ../nbs/utils.ipynb 26
 def asnumpy(x) -> np.ndarray:
