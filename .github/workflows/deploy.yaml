@@ -8,8 +8,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: "pip"
@@ -23,7 +23,7 @@ jobs:
           # install torch and torchvision for docs
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           nbdev_install_quarto
-          test -f setup.py && pip install -e ".[dev]"
+          test -f setup.py && pip install -e ".[dev]" -U
       - name: Build docs
         shell: bash
         run: |
