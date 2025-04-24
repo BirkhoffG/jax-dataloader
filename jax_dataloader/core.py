@@ -96,6 +96,7 @@ class DataLoader:
         batch_size: int = 1,  # How many samples per batch to load
         shuffle: bool = False,  # If true, dataloader reshuffles every epoch
         drop_last: bool = False, # If true, drop the last incomplete batch
+        generator: GeneratorType = None, # Random seed generator
         **kwargs
     ):
         dl_cls = _dispatch_dataloader(backend)
@@ -104,6 +105,7 @@ class DataLoader:
             batch_size=batch_size, 
             shuffle=shuffle, 
             drop_last=drop_last,
+            generator=generator,
             **kwargs
         )
 
