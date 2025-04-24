@@ -57,11 +57,12 @@ class DataLoaderJAX(BaseDataLoader):
         self.drop_last = drop_last
 
         # init rng key via generator
-        if not isinstance(generator, Generator):
-            generator = Generator(generator)
         if generator is None:
             # explicitly set the manual seed of the generator 
             generator = Generator().manual_seed(get_config().global_seed)
+        if not isinstance(generator, Generator):
+            generator = Generator(generator=generator)
+        
         self.key = generator.jax_generator()
     
     def __iter__(self):

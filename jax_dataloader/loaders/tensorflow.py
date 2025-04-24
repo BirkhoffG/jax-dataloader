@@ -28,11 +28,11 @@ def to_tf_dataset(dataset: HFDataset) -> tf.data.Dataset:
 
 # %% ../../nbs/loader.tf.ipynb 5
 def get_seed(generator: Optional[Generator | jax.Array | torch.Generator] = None) -> int:
-    if not isinstance(generator, Generator):
-        generator = Generator(generator)
-    
     if generator is None:
         generator = Generator()
+    
+    if not isinstance(generator, Generator):
+        generator = Generator(generator=generator)
     
     seed = generator.seed()
     if seed is None:

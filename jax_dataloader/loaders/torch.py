@@ -63,11 +63,12 @@ class DataLoaderPytorch(BaseDataLoader):
         # convert to torch dataset
         dataset = to_torch_dataset(dataset)
         # init generator
-        if not isinstance(generator, Generator):
-            generator = Generator(generator)
         if generator is None:
             # explicitly set the manual seed of the generator
             generator = Generator().manual_seed(get_config().global_seed)
+        if not isinstance(generator, Generator):
+            generator = Generator(generator=generator)
+        
         generator = generator.torch_generator()
         # init batch sampler
         if shuffle: 
