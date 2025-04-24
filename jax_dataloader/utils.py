@@ -90,7 +90,7 @@ class Generator:
 
     def seed(self) -> Optional[int]:
         """The initial seed of the generator"""
-        # TODO: the seed might not be initizalized if the generator is a `jax.random.PRNGKey`
+        # TODO: the seed might not be initialized if the generator is a `jax.random.PRNGKey`
         return self._seed
     
     def manual_seed(self, seed: int) -> Generator:
