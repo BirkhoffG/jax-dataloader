@@ -3,7 +3,7 @@
 # %% ../../nbs/loader.base.ipynb 3
 from __future__ import print_function, division, annotations
 from ..imports import *
-from ..utils import Generator
+from ..utils import Generator, GeneratorType
 
 # %% auto 0
 __all__ = ['BaseDataLoader']
@@ -19,7 +19,7 @@ class BaseDataLoader:
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading.
         drop_last: bool = False,
-        generator: Optional[Generator | jax.Array | torch.Generator] = None,
+        generator: Optional[GeneratorType] = None,
         **kwargs
     ):
         pass

@@ -5,7 +5,7 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from ..datasets import ArrayDataset, JAXDataset
 from . import BaseDataLoader
-from ..utils import get_config, asnumpy, Generator
+from ..utils import get_config, asnumpy, Generator, GeneratorType
 from ..tests import *
 import jax_dataloader as jdl
 from threading import Thread, Event
@@ -46,7 +46,7 @@ class DataLoaderJAX(BaseDataLoader):
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.
         drop_last: bool = False, # if true, drop the last incomplete batch
-        generator: Optional[Union[Generator, jax.Array, torch.Generator]] = None, # random seed generator
+        generator: Optional[GeneratorType] = None, # random seed generator
         **kwargs
     ):
         self.dataset = to_jax_dataset(dataset)

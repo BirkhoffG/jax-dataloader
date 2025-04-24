@@ -5,7 +5,7 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from . import BaseDataLoader
 from ..datasets import Dataset, ArrayDataset, JAXDataset
-from ..utils import check_pytorch_installed, get_config, Generator
+from ..utils import check_pytorch_installed, get_config, Generator, GeneratorType
 from ..tests import *
 from jax.tree_util import tree_map
 import warnings
@@ -48,7 +48,7 @@ class DataLoaderPytorch(BaseDataLoader):
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
-        generator: Optional[Union[Generator, jax.Array, torch.Generator]] = None,
+        generator: Optional[GeneratorType] = None,
         **kwargs
     ):
         super().__init__(dataset, batch_size, shuffle, drop_last)
