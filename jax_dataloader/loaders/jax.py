@@ -46,7 +46,7 @@ class DataLoaderJAX(BaseDataLoader):
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.
         drop_last: bool = False, # if true, drop the last incomplete batch
-        generator: Optional[GeneratorType] = None, # random seed generator
+        generator: GeneratorType = None, # random seed generator
         **kwargs
     ):
         self.dataset = to_jax_dataset(dataset)
