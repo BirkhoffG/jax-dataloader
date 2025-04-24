@@ -49,7 +49,7 @@ class DataLoaderTensorflow(BaseDataLoader):
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
-        generator: Optional[Generator | jax.Array | torch.Generator] = None, # Random seed generator
+        generator: Optional[Union[Generator, jax.Array, torch.Generator]] = None, # Random seed generator
         **kwargs
     ):
         super().__init__(dataset, batch_size, shuffle, drop_last)
