@@ -78,20 +78,19 @@ class Generator:
 
         if generator is None:
             self._seed = get_config().global_seed
-        elif isinstance(generator, jax.Array):
-            self._jax_generator = generator
         elif isinstance(generator, torch.Generator):
             self._torch_generator = generator
+        elif isinstance(generator, jax.Array):
+            self._jax_generator = generator
         else:
             raise ValueError(f"generator=`{generator}` is invalid. Must be either a `jax.random.PRNGKey` or a `torch.Generator`.")
         
         if self._seed is None and self._torch_generator is not None:
             self._seed = self._torch_generator.initial_seed()
 
-    def seed(self) -> int:
+    def seed(self) -> Optional[int]:
         """The initial seed of the generator"""
-        if self._seed is None:
-            raise ValueError("The seed is not specified. Please set the seed using `manual_seed()` or pass a generator.")
+        # TODO: the seed might not be initizalized if the generator is a `jax.random.PRNGKey`
         return self._seed
     
     def manual_seed(self, seed: int) -> Generator:

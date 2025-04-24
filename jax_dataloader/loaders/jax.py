@@ -5,7 +5,7 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from ..datasets import ArrayDataset, JAXDataset
 from . import BaseDataLoader
-from ..utils import get_config, asnumpy
+from ..utils import get_config, asnumpy, Generator
 from ..tests import *
 import jax_dataloader as jdl
 from threading import Thread, Event
@@ -45,16 +45,24 @@ class DataLoaderJAX(BaseDataLoader):
         batch_size: int = 1,  # batch size
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.
-        drop_last: bool = False,
+        drop_last: bool = False, # if true, drop the last incomplete batch
+        generator: Optional[Generator | jax.Array | torch.Generator] = None, # random seed generator
         **kwargs
     ):
-        self.key = jrand.PRNGKey(get_config().global_seed)
         self.dataset = to_jax_dataset(dataset)
         
         self.indices = np.arange(len(dataset))
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
+
+        # init rng key via generator
+        if not isinstance(generator, Generator):
+            generator = Generator(generator)
+        if generator is None:
+            # explicitly set the manual seed of the generator 
+            generator = Generator().manual_seed(get_config().global_seed)
+        self.key = generator.jax_generator()
     
     def __iter__(self):
         # shuffle (permutation) indices every epoch        
@@ -71,3 +79,5 @@ class DataLoaderJAX(BaseDataLoader):
     def __len__(self):
         complete_batches, remainder = divmod(len(self.indices), self.batch_size)
         return complete_batches if self.drop_last else complete_batches + bool(remainder)
+
+# %%
