@@ -5,7 +5,8 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from . import BaseDataLoader
 from ..datasets import Dataset, ArrayDataset, JAXDataset
-from ..utils import check_tf_installed, get_config, Generator, GeneratorType
+from ..utils import check_tf_installed, get_config, Generator
+from ..types import GeneratorType
 from ..tests import *
 from jax.tree_util import tree_map
 import warnings

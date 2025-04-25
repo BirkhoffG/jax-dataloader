@@ -3,7 +3,8 @@
 # %% ../../nbs/loader.base.ipynb 3
 from __future__ import print_function, division, annotations
 from ..imports import *
-from ..utils import Generator, GeneratorType
+from ..utils import Generator
+from ..types import GeneratorType
 
 # %% auto 0
 __all__ = ['BaseDataLoader']

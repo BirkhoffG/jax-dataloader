@@ -7,8 +7,8 @@ import jax_dataloader as jdl
 import collections
 
 # %% auto 0
-__all__ = ['GeneratorType', 'Config', 'get_config', 'manual_seed', 'check_pytorch_installed', 'has_pytorch_tensor',
-           'check_hf_installed', 'check_tf_installed', 'Generator', 'asnumpy']
+__all__ = ['Config', 'get_config', 'manual_seed', 'check_pytorch_installed', 'has_pytorch_tensor', 'check_hf_installed',
+           'check_tf_installed', 'Generator', 'asnumpy']
 
 # %% ../nbs/utils.ipynb 7
 @dataclass
@@ -67,10 +67,12 @@ def check_tf_installed():
 
 # %% ../nbs/utils.ipynb 21
 class Generator:
+    """A wrapper around JAX and PyTorch generators. This is used to generate random numbers in a reproducible way."""
+
     def __init__(
         self, 
         *, 
-        generator: jrand.Array | torch.Generator = None,
+        generator: jax.Array | torch.Generator = None, # Optional generator
     ):
         self._seed = None
         self._jax_generator = None
@@ -117,8 +119,6 @@ class Generator:
         if self._torch_generator is None:
             raise ValueError("Neither pytorch generator or seed is specified.")
         return self._torch_generator
-
-GeneratorType = Union[Generator, jax.Array, 'torch.Generator']
 
 # %% ../nbs/utils.ipynb 26
 def asnumpy(x) -> np.ndarray:

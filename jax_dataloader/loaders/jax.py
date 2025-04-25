@@ -5,7 +5,8 @@ from __future__ import print_function, division, annotations
 from ..imports import *
 from ..datasets import ArrayDataset, JAXDataset
 from . import BaseDataLoader
-from ..utils import get_config, asnumpy, Generator, GeneratorType
+from ..utils import get_config, asnumpy, Generator
+from ..types import GeneratorType
 from ..tests import *
 import jax_dataloader as jdl
 from threading import Thread, Event

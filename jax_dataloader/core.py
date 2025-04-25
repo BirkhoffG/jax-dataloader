@@ -8,6 +8,7 @@ from .imports import *
 from .utils import *
 from .datasets import *
 from .loaders import *
+from .types import *
 
 # %% auto 0
 __all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'get_backend_compatibilities', 'DataLoader']
