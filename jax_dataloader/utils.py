@@ -78,7 +78,7 @@ class Generator:
 
         if generator is None:
             self._seed = get_config().global_seed
-        elif isinstance(generator, torch.Generator):
+        elif (torch is not None) and isinstance(generator, torch.Generator):
             self._torch_generator = generator
         elif isinstance(generator, jax.Array):
             self._jax_generator = generator
