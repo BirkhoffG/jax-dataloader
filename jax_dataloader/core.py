@@ -8,6 +8,7 @@ from .imports import *
 from .utils import *
 from .datasets import *
 from .loaders import *
+from .types import *
 
 # %% auto 0
 __all__ = ['SUPPORTED_DATASETS', 'DataloaderBackends', 'get_backend_compatibilities', 'DataLoader']
@@ -96,6 +97,7 @@ class DataLoader:
         batch_size: int = 1,  # How many samples per batch to load
         shuffle: bool = False,  # If true, dataloader reshuffles every epoch
         drop_last: bool = False, # If true, drop the last incomplete batch
+        generator: Optional[GeneratorType] = None, # Random seed generator
         **kwargs
     ):
         dl_cls = _dispatch_dataloader(backend)
@@ -104,6 +106,7 @@ class DataLoader:
             batch_size=batch_size, 
             shuffle=shuffle, 
             drop_last=drop_last,
+            generator=generator,
             **kwargs
         )
 
