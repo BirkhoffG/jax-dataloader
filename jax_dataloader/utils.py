@@ -118,7 +118,7 @@ class Generator:
             raise ValueError("Neither pytorch generator or seed is specified.")
         return self._torch_generator
 
-GeneratorType = Generator | jax.Array | 'torch.Generator' | None
+GeneratorType = Union[Generator, jax.Array, 'torch.Generator']
 
 # %% ../nbs/utils.ipynb 26
 def asnumpy(x) -> np.ndarray:

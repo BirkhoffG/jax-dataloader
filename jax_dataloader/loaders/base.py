@@ -19,7 +19,7 @@ class BaseDataLoader:
         shuffle: bool = False,  # if true, dataloader shuffles before sampling each batch
         num_workers: int = 0,  # how many subprocesses to use for data loading.
         drop_last: bool = False,
-        generator: GeneratorType = None,
+        generator: Optional[GeneratorType] = None,
         **kwargs
     ):
         pass

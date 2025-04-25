@@ -48,7 +48,7 @@ class DataLoaderPytorch(BaseDataLoader):
         batch_size: int = 1,  # Batch size
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
-        generator: GeneratorType = None,
+        generator: Optional[GeneratorType] = None,
         **kwargs
     ):
         super().__init__(dataset, batch_size, shuffle, drop_last)
