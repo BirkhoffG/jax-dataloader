@@ -2,6 +2,7 @@ import jax_dataloader as jdl
 import numpy as np
 import tensorflow_datasets as tfds
 import tensorflow as tf
+import jax.random as jrand
 
 
 def test_jax():
@@ -25,7 +26,7 @@ def test_generator():
     ds = jdl.ArrayDataset(np.ones((10, 3)), np.ones((10, 3)))
 
     g1 = jdl.Generator().manual_seed(123)
-    g2 = tf.random.Generator.from_seed(123)
+    g2 = jrand.PRNGKey(jdl.get_config().global_seed)
 
     # Create two different dataloaders with different generators
     dl = jdl.DataLoader(ds, 'tensorflow', batch_size=2, generator=g1, shuffle=True)
