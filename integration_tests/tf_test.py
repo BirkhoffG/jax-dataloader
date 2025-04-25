@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow_datasets as tfds
 import tensorflow as tf
 import jax.random as jrand
-
+import jax.tree_util as jtu
 
 def test_jax():
     ds = jdl.ArrayDataset(np.ones((10, 3)), np.ones((10, 3)))
@@ -38,7 +38,9 @@ def test_generator():
     def are_equal(a, b):
         return np.all(a == b)
     # Map the equality function over the entire pytree structure
-    equal_elements = jdl.tree_map(are_equal, batch, new_batch)
+    equal_elements = jtu.tree_map(are_equal, batch, new_batch)
     # Check all elements are True
-    all_equal = all(jdl.tree_leaves(equal_elements))
+    all_equal = all(jtu.tree_leaves(equal_elements))
     assert all_equal
+    # Also verify the tree structures match
+    assert jtu.tree_structure(batch) == jtu.tree_structure(new_batch)
