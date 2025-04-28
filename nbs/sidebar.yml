@@ -2,6 +2,7 @@ website:
   sidebar:
     contents:
       - index.ipynb
+      - examples/random.ipynb
       - section: Examples
         contents:
         - examples/vit.torch.ipynb
