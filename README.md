@@ -11,6 +11,9 @@ status](https://github.com/BirkhoffG/jax-dataloader/actions/workflows/nbdev.yaml
 License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 <a href="https://static.pepy.tech/badge/jax-dataloader"><img src="https://static.pepy.tech/badge/jax-dataloader" alt="Downloads"></a>
 
+[**Overview**](#overview) \| [**Installation**](#installation) \|
+[**Documentation**](https://birkhoffg.github.io/jax-dataloader)
+
 ## Overview
 
 `jax_dataloader` brings *pytorch-like* dataloader API to `jax`. It
@@ -45,6 +48,7 @@ dataloader = jdl.DataLoader(
     batch_size=32, # Batch size 
     shuffle=True, # Shuffle the dataloader every iteration or not
     drop_last=False, # Drop the last batch or not
+    generator=jdl.Generator() # Control the randomness of this dataloader 
 )
 
 batch = next(iter(dataloader)) # iterate next batch
