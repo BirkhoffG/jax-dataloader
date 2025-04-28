@@ -12,6 +12,7 @@ License](https://img.shields.io/github/license/BirkhoffG/jax-dataloader.svg)
 <a href="https://static.pepy.tech/badge/jax-dataloader"><img src="https://static.pepy.tech/badge/jax-dataloader" alt="Downloads"></a>
 
 [**Overview**](#overview) \| [**Installation**](#installation) \|
+[**Usage**](#usage) \|
 [**Documentation**](https://birkhoffg.github.io/jax-dataloader)
 
 ## Overview
