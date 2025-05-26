@@ -51,6 +51,7 @@ class DataLoaderTensorflow(BaseDataLoader):
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
         generator: Optional[GeneratorType] = None, # Random seed generator
+        collate_fn: Optional[Callable] = None, # Function to collate samples into batches
         **kwargs
     ):
         super().__init__(dataset, batch_size, shuffle, drop_last)
@@ -62,6 +63,11 @@ class DataLoaderTensorflow(BaseDataLoader):
         ds = to_tf_dataset(dataset)
         ds = ds.shuffle(buffer_size=len(dataset), seed=seed) if shuffle else ds
         ds = ds.batch(batch_size, drop_remainder=drop_last)
+        
+        # Apply collate_fn if provided
+        if collate_fn is not None:
+            ds = ds.map(collate_fn, num_parallel_calls=tf.data.AUTOTUNE)
+        
         ds = ds.prefetch(tf.data.AUTOTUNE)
         self.dataloader = ds
 

@@ -21,6 +21,7 @@ class BaseDataLoader:
         num_workers: int = 0,  # how many subprocesses to use for data loading.
         drop_last: bool = False,
         generator: Optional[GeneratorType] = None,
+        collate_fn: Optional[Callable] = None,  # function to collate samples into batches
         **kwargs
     ):
         pass

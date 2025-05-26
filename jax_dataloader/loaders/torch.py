@@ -50,6 +50,7 @@ class DataLoaderPytorch(BaseDataLoader):
         shuffle: bool = False,  # If true, dataloader shuffles before sampling each batch
         drop_last: bool = False, # Drop last batch or not
         generator: Optional[GeneratorType] = None,
+        collate_fn: Optional[Callable] = None,  # Function to collate samples into batches
         **kwargs
     ):
         super().__init__(dataset, batch_size, shuffle, drop_last)
@@ -78,13 +79,17 @@ class DataLoaderPytorch(BaseDataLoader):
             sampler = SequentialSampler(dataset)
         batch_sampler = BatchSampler(sampler, batch_size=batch_size, drop_last=drop_last)
 
+        # Use custom collate_fn if provided, otherwise use default numpy collate
+        if collate_fn is None:
+            collate_fn = _numpy_collate
+
         self.dataloader = torch_data.DataLoader(
             dataset, 
             batch_sampler=batch_sampler,
             # batch_size=batch_size, 
             # shuffle=shuffle, 
             # drop_last=drop_last,
-            collate_fn=_numpy_collate,
+            collate_fn=collate_fn,
             **kwargs
         )
 

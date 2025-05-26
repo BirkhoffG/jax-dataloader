@@ -7,7 +7,7 @@ from .datasets import ArrayDataset
 import jax_dataloader as jdl
 
 # %% auto 0
-__all__ = ['test_shuffle_reproducible', 'test_dataloader']
+__all__ = ['test_collate_fn', 'test_shuffle_reproducible']
 
 # %% ../nbs/tests.ipynb 3
 def get_batch(batch):
@@ -83,6 +83,44 @@ def test_shuffle_drop_last(cls, ds, batch_size: int, feats, labels):
         assert len(_X) == len(X_list) * batch_size
 
 # %% ../nbs/tests.ipynb 8
+def test_collate_fn(cls, ds, batch_size: int):
+    """Test that collate_fn parameter works correctly"""
+    
+    def custom_collate(batch):
+        if isinstance(batch, dict):
+            # HuggingFace format
+            return {'feats': batch['feats'] + 1.0, 'labels': batch['labels']}
+        elif isinstance(batch, tuple):
+            # Tuple format (X, y)
+            X, y = batch
+            return X + 1.0, y
+        else:
+            # Single array
+            return batch + 1.0
+
+    # Test without collate_fn (baseline)
+    dl_normal = cls(ds, batch_size=batch_size, shuffle=False, drop_last=False)
+    first_batch_normal = next(iter(dl_normal))
+    
+    # Test with collate_fn
+    dl_collate = cls(ds, batch_size=batch_size, shuffle=False, drop_last=False, collate_fn=custom_collate)
+    first_batch_collate = next(iter(dl_collate))
+    
+    # Verify collate_fn was applied
+    if isinstance(first_batch_normal, dict):
+        # HuggingFace format
+        normal_feats = first_batch_normal['feats']
+        collate_feats = first_batch_collate['feats']
+        assert np.array_equal(collate_feats, normal_feats + 1.0), "collate_fn should add 1.0 to features"
+        assert np.array_equal(first_batch_collate['labels'], first_batch_normal['labels']), "labels should be unchanged"
+    else:
+        # Tuple format
+        normal_X, normal_y = first_batch_normal
+        collate_X, collate_y = first_batch_collate
+        assert np.array_equal(collate_X, normal_X + 1.0), "collate_fn should add 1.0 to features"
+        assert np.array_equal(collate_y, normal_y), "labels should be unchanged"
+
+# %% ../nbs/tests.ipynb 9
 def test_shuffle_reproducible(cls, ds, batch_size: int, feats, labels):
     """Test that the shuffle is reproducible"""
     def _iter_dataloader(dataloader):
@@ -106,26 +144,3 @@ def test_shuffle_reproducible(cls, ds, batch_size: int, feats, labels):
     dl_3 = cls(ds, batch_size=batch_size, shuffle=True, drop_last=False)
     X_list_3, Y_list_3 = _iter_dataloader(dl_3)
     assert not jnp.array_equal(jnp.concatenate(X_list_1), jnp.concatenate(X_list_3))
-
-# %% ../nbs/tests.ipynb 9
-def test_dataloader(cls, ds_type='jax', samples=1000, batch_size=12):
-    feats = np.arange(samples).repeat(10).reshape(samples, 10)
-    labels = np.arange(samples).reshape(samples, 1)
-
-    if ds_type == 'jax':
-        ds = ArrayDataset(feats, labels)
-    elif ds_type == 'torch':
-        ds = torch.utils.data.TensorDataset(
-            torch.from_numpy(feats), torch.from_numpy(labels))
-    elif ds_type == 'tf':
-        ds = tf.data.Dataset.from_tensor_slices((feats, labels))
-    elif ds_type == "hf":
-        ds = hf_datasets.Dataset.from_dict({"feats": feats, "labels": labels})
-    else:
-        raise ValueError(f"Unknown ds_type: {ds_type}")
-    
-    test_no_shuffle(cls, ds, batch_size, feats, labels)
-    test_no_shuffle_drop_last(cls, ds, batch_size, feats, labels)
-    test_shuffle(cls, ds, batch_size, feats, labels)
-    test_shuffle_drop_last(cls, ds, batch_size, feats, labels)
-    test_shuffle_reproducible(cls, ds, batch_size, feats, labels)

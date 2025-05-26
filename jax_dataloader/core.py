@@ -98,6 +98,7 @@ class DataLoader:
         shuffle: bool = False,  # If true, dataloader reshuffles every epoch
         drop_last: bool = False, # If true, drop the last incomplete batch
         generator: Optional[GeneratorType] = None, # Random seed generator
+        collate_fn: Optional[Callable] = None, # Function to collate samples into batches
         **kwargs
     ):
         dl_cls = _dispatch_dataloader(backend)
@@ -107,6 +108,7 @@ class DataLoader:
             shuffle=shuffle, 
             drop_last=drop_last,
             generator=generator,
+            collate_fn=collate_fn,
             **kwargs
         )
 

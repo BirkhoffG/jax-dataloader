@@ -12,6 +12,7 @@ from typing import (
     Literal,
     Union,
     Annotated,
+    Callable,
 )
 import jax
 from jax import vmap, grad, jit, numpy as jnp, random as jrand
