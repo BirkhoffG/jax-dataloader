@@ -66,7 +66,21 @@ class DataLoaderTensorflow(BaseDataLoader):
         
         # Apply collate_fn if provided
         if collate_fn is not None:
-            ds = ds.map(collate_fn, num_parallel_calls=tf.data.AUTOTUNE)
+            # TensorFlow map unpacks arguments, so we need a wrapper that packs them back
+            def tf_collate_wrapper(*args):
+                # Pack arguments back into a tuple to match expected collate_fn interface
+                if len(args) == 1:
+                    batch = args[0]
+                else:
+                    batch = args  # tuple of (X, y, ...)
+                result = collate_fn(batch)
+                # Ensure result is unpacked for TensorFlow
+                if isinstance(result, (tuple, list)):
+                    return result
+                else:
+                    return (result,)
+            
+            ds = ds.map(tf_collate_wrapper, num_parallel_calls=tf.data.AUTOTUNE)
         
         ds = ds.prefetch(tf.data.AUTOTUNE)
         self.dataloader = ds
