@@ -19,11 +19,15 @@ __all__ = ['EpochIterator', 'to_jax_dataset', 'DataLoaderJAX']
 def EpochIterator(
     data,
     batch_size: int,
-    indices: Sequence[int]
+    indices: Sequence[int],
+    collate_fn: Optional[Callable] = None
 ):
     for i in range(0, len(indices), batch_size):
         idx = indices[i:i+batch_size]
-        yield data[idx]
+        batch = data[idx]
+        if collate_fn is not None:
+            batch = collate_fn(batch)
+        yield batch
 
 # %% ../../nbs/loader.jax.ipynb 5
 @dispatch
@@ -48,6 +52,7 @@ class DataLoaderJAX(BaseDataLoader):
         num_workers: int = 0,  # how many subprocesses to use for data loading. Ignored.
         drop_last: bool = False, # if true, drop the last incomplete batch
         generator: Optional[GeneratorType] = None, # random seed generator
+        collate_fn: Optional[Callable] = None, # function to collate samples into batches
         **kwargs
     ):
         self.dataset = to_jax_dataset(dataset)
@@ -56,6 +61,7 @@ class DataLoaderJAX(BaseDataLoader):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
+        self.collate_fn = collate_fn
 
         # init rng key via generator
         if generator is None:
@@ -72,7 +78,7 @@ class DataLoaderJAX(BaseDataLoader):
         
         if self.drop_last:
             indices = indices[:len(self.indices) - len(self.indices) % self.batch_size]
-        return EpochIterator(self.dataset, self.batch_size, indices)
+        return EpochIterator(self.dataset, self.batch_size, indices, self.collate_fn)
     
     def next_key(self):
         self.key, subkey = jrand.split(self.key)
@@ -81,5 +87,3 @@ class DataLoaderJAX(BaseDataLoader):
     def __len__(self):
         complete_batches, remainder = divmod(len(self.indices), self.batch_size)
         return complete_batches if self.drop_last else complete_batches + bool(remainder)
-
-# %%
